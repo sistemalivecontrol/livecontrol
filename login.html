@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LiveControl</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0a1628;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Background animation */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(0, 102, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 102, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(0, 68, 204, 0.1) 0%, transparent 50%);
+        }
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+        }
+        .logo-section h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+        .logo-section h1 span {
+            color: #0B193F;
+        }
+        .logo-section p {
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-top: 4px;
+        }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 15px;
+            color: white;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        input:focus {
+            outline: none;
+            border-color: #0B193F;
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0B193F 0%, #152B5C 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            margin-top: 8px;
+        }
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 102, 255, 0.35);
+        }
+        button[type="submit"]:disabled {
+            background: #334155;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #0B193F; }
+
+        .feature-list {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.35);
+            font-size: 12px;
+        }
+        .feature-item svg {
+            width: 14px;
+            height: 14px;
+            color: #0B193F;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="logo-section">
+                <svg class="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="15" width="60" height="70" rx="12" stroke="#0B193F" stroke-width="6" fill="none"/>
+                    <path d="M35 40 L55 52 L35 64 Z" fill="#0B193F"/>
+                    <path d="M20 75 L35 60" stroke="#0B193F" stroke-width="6" stroke-linecap="round"/>
+                    <circle cx="72" cy="25" r="22" fill="#0B193F"/>
+                    <text x="72" y="32" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
+                </svg>
+                <h1>Live<span>Control</span></h1>
+                <p>Sistema de Gestão para Lives</p>
+            </div>
+
+            <div id="errorMsg" class="error-message"></div>
+            <div id="successMsg" class="success-message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" required placeholder="seu@email.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" required placeholder="Sua senha" autocomplete="current-password">
+                </div>
+
+                <button type="submit" id="btnEntrar">
+                    Entrar no Sistema
+                </button>
+            </form>
+
+            <div class="feature-list">
+                <span class="feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Pedidos
+                </span>
+                <span class="feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Cobranças
+                </span>
+                <span class="feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Clientes
+                </span>
+                <span class="feature-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Entregas
+                </span>
+            </div>
+        </div>
+
+        <a href="/" class="back-link">&larr; Voltar para o site</a>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function fazerLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            const btnEntrar = document.getElementById('btnEntrar');
+            const errorDiv = document.getElementById('errorMsg');
+            const successDiv = document.getElementById('successMsg');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            btnEntrar.disabled = true;
+            btnEntrar.innerHTML = 'Entrando... <span class="loading"></span>';
+
+            try {
+                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: senha
+                });
+                if (authError) throw new Error('E-mail ou senha incorretos.');
+
+                const authId = authData.user.id;
+                const { data: usuario, error: userError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select(`*, clientes_sistema!inner(id, nome, ativo, data_expiracao)`)
+                    .eq('auth_id', authId)
+                    .eq('ativo', true)
+                    .single();
+
+                if (userError) {
+                    await supabaseClient.auth.signOut();
+                    if (userError.code === 'PGRST116') {
+                        throw new Error('Usuário não encontrado no sistema ou está inativo.');
+                    }
+                    throw new Error('Erro ao verificar permissões: ' + userError.message);
+                }
+                if (!usuario) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error('Usuário não encontrado no sistema.');
+                }
+
+                const cliente = usuario.clientes_sistema;
+                if (!cliente.ativo) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error('Cliente inativo. Entre em contato com o administrador.');
+                }
+                const hoje = new Date();
+                const expiracao = new Date(cliente.data_expiracao);
+                if (expiracao < hoje) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error('Licença expirada em ' + expiracao.toLocaleDateString('pt-BR'));
+                }
+
+                const dadosSessao = {
+                    auth_id: authId,
+                    usuario_id: usuario.id,
+                    nome: usuario.nome,
+                    email: usuario.email,
+                    cliente_id: usuario.cliente_id,
+                    cliente_nome: cliente.nome,
+                    nivel_acesso: usuario.nivel_acesso,
+                    ativo: usuario.ativo,
+                    login_time: new Date().toISOString()
+                };
+                localStorage.setItem('usuarioLogado', JSON.stringify(dadosSessao));
+                localStorage.setItem('clienteId', usuario.cliente_id);
+                localStorage.setItem('nivelAcesso', usuario.nivel_acesso);
+
+                successDiv.textContent = 'Bem-vindo, ' + (usuario.nome || usuario.email) + '! Redirecionando...';
+                successDiv.style.display = 'block';
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+
+            } catch (error) {
+                errorDiv.innerHTML = error.message;
+                errorDiv.style.display = 'block';
+                btnEntrar.disabled = false;
+                btnEntrar.innerHTML = 'Entrar no Sistema';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', fazerLogin);
+
+        async function verificarSessaoExistente() {
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error) return;
+                if (session) {
+                    const usuarioLogado = localStorage.getItem('usuarioLogado');
+                    if (usuarioLogado) {
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+            } catch (error) {}
+        }
+        verificarSessaoExistente();
+    </script>
+</body>
+</html>
