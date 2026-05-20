@@ -202,6 +202,7 @@
     
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -240,11 +241,11 @@
                     <div class="form-group"><label>Status</label><select id="filtroStatus"><option value="">Todos</option><option value="pendente">Pendente</option><option value="em_separacao">Em Separação</option><option value="enviado">Enviado</option><option value="entregue">Entregue</option><option value="cancelado">Cancelado</option></select></div>
                     <div class="filtro-data-hora">
                         <div class="form-group"><label>Data Inicial</label><input type="date" id="filtroDataInicio" onchange="sincronizarDataHora('inicio')"></div>
-                        <div class="form-group"><label>Hora</label><input type="time" id="filtroHoraInicio" value="00:00" onchange="sincronizarDataHora('inicio')"></div>
+                        <div class="form-group"><label>Hora</label><input type="time" id="filtroHoraInicio" value="" onchange="sincronizarDataHora('inicio')"></div>
                     </div>
                     <div class="filtro-data-hora">
                         <div class="form-group"><label>Data Final</label><input type="date" id="filtroDataFim" onchange="sincronizarDataHora('fim')"></div>
-                        <div class="form-group"><label>Hora</label><input type="time" id="filtroHoraFim" value="17:00" onchange="sincronizarDataHora('fim')"></div>
+                        <div class="form-group"><label>Hora</label><input type="time" id="filtroHoraFim" value="" onchange="sincronizarDataHora('fim')"></div>
                     </div>
                     <div class="form-group" style="display:none;"><label>Cliente</label><select id="filtroCliente" disabled><option value="">Carregando...</option></select></div>
                     <div class="form-group"><label>Nome do Cliente</label><input type="text" id="filtroNomeCliente" placeholder="Buscar por nome..."></div>
@@ -264,7 +265,7 @@
                         <tr>
                             <th class="checkbox-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
                             <th>Nº Pedido</th>
-                            <th>Data Solicitação</th>
+                            <th>Data / Hora</th>
                             <th>Nome</th>
                             <th>CPF</th>
                             <th>WhatsApp</th>
@@ -741,12 +742,13 @@ let solicitacoes = [];
                 const cliente = s.clientes_pg || {};
                 const endereco = s.enderecos_pg || {};
                 const dataSolicitacao = s.criado_em ? new Date(s.criado_em).toLocaleDateString('pt-BR') : '-';
+                const horaSolicitacao = s.criado_em ? new Date(s.criado_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
                 const enderecoCompleto = `${endereco.rua || ''}, ${endereco.numero || ''}${endereco.complemento ? ' - ' + endereco.complemento : ''} - ${endereco.bairro || ''}, ${endereco.cidade || ''}`;
 
                 return `<tr data-index="${index}">
                     <td class="checkbox-cell"><input type="checkbox" class="row-checkbox" onchange="toggleSelecao(${index})" value="${s.id}"></td>
                     <td><span class="numero-pedido">${s.numero_solicitacao || 'N/A'}</span></td>
-                    <td>${dataSolicitacao}</td>
+                    <td>${dataSolicitacao}<br><span style="font-size:0.75rem;color:#888;font-weight:500;">${horaSolicitacao}</span></td>
                     <td><strong>${cliente.nome || 'N/A'}</strong></td>
                     <td>${formatarCPF(cliente.cpf)}</td>
                     <td>${cliente.whatsapp ? `<a href="https://wa.me/${formatarWhatsApp(cliente.whatsapp)}" target="_blank" class="whatsapp-link">📱 ${cliente.whatsapp}</a>` : '-'}</td>
@@ -861,13 +863,13 @@ let solicitacoes = [];
 
             if (!dataInput.value) {
                 // Se limpar a data, limpar também a hora
-                horaInput.value = tipo === 'inicio' ? '00:00' : '17:00';
+                horaInput.value = '';
                 return;
             }
 
             // Se a data foi preenchida mas a hora está vazia, definir padrão
             if (!horaInput.value) {
-                horaInput.value = tipo === 'inicio' ? '00:00' : '17:00';
+                horaInput.value = tipo === 'inicio' ? '00:00' : '23:59';
             }
         }
 
@@ -878,7 +880,7 @@ let solicitacoes = [];
             if (!data) return null;
 
             // Se tem data mas não tem hora, usar padrão
-            var horaPadrao = tipo === 'inicio' ? '00:00' : '17:00';
+            var horaPadrao = tipo === 'inicio' ? '00:00' : '23:59';
             var horaFinal = hora || horaPadrao;
 
             return data + 'T' + horaFinal + ':00';
@@ -888,9 +890,9 @@ let solicitacoes = [];
             document.getElementById('filtroNumero').value = '';
             document.getElementById('filtroStatus').value = '';
             document.getElementById('filtroDataInicio').value = '';
-            document.getElementById('filtroHoraInicio').value = '00:00';
+            document.getElementById('filtroHoraInicio').value = '';
             document.getElementById('filtroDataFim').value = '';
-            document.getElementById('filtroHoraFim').value = '17:00';
+            document.getElementById('filtroHoraFim').value = '';
             document.getElementById('filtroNomeCliente').value = '';
             idsSelecionados.clear();
             carregarSolicitacoes();
