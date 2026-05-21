@@ -296,6 +296,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -982,7 +983,19 @@ let solicitacoes = [];
             var horaPadrao = tipo === 'inicio' ? '00:00' : '23:59';
             var horaFinal = hora || horaPadrao;
 
-            return data + 'T' + horaFinal + ':00';
+            // Criar data no timezone local e converter para ISO string (UTC)
+            // Isso garante que o filtro respeite exatamente a hora selecionada pelo usuário
+            var partesData = data.split('-');
+            var partesHora = horaFinal.split(':');
+            var dataLocal = new Date(
+                parseInt(partesData[0]),
+                parseInt(partesData[1]) - 1,
+                parseInt(partesData[2]),
+                parseInt(partesHora[0]),
+                parseInt(partesHora[1]),
+                0
+            );
+            return dataLocal.toISOString();
         }
 
         function limparFiltros() {
