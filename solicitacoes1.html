@@ -222,18 +222,6 @@
                 <label for="confirmarPrazo">✅ Li e entendi o prazo para solicitações semanais acima</label>
             </div>
         </div>
-        <div class="frete-calculado-box" id="freteCalculadoBox">
-            <span class="emoji-grande">🚚</span>
-            <h3>Frete Calculado Automaticamente</h3>
-            <div class="frete-valor" id="freteValor">R$ 0,00</div>
-            <div class="frete-descricao" id="freteDescricao">Aguardando preenchimento do endereço...</div>
-            <div class="frete-cidade-info" id="freteCidadeInfo"></div>
-        </div>
-        <div class="outros-estados-box" id="outrosEstadosBox">
-            <span class="emoji-grande">📦</span>
-            <h3>🌎 Envio para Outros Estados</h3>
-            <p>Iremos pesar seu pacote e retornaremos com os menores valores de frete encontrados nas melhores plataformas de envio.<br><br><strong>💬 O orçamento será enviado via Direct do Instagram.</strong></p>
-        </div>
         <div class="form-box desabilitado" id="formBox">
             <form id="deliveryForm">
                 <!-- 1. CPF -->
@@ -291,55 +279,68 @@
                     <label class="required">Bairro</label>
                     <input type="text" name="bairro" id="bairro" required placeholder="Bairro">
                 </div>
-                <!-- 9. Cidade -->
+                <!-- 9. CEP -->
                 <div class="form-group">
+                    <label class="required">CEP</label>
+                    <input type="text" name="cep" id="cepEndereco" required placeholder="00000-000" maxlength="9">
+                </div>
+                <!-- 10. Estado -->
+                <div class="form-group">
+                    <label class="required">Estado</label>
+                    <select name="estado" id="estado" required>
+                        <option value="">Selecione o estado...</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
+                </div>
+                <!-- 11. Cidade (SC = dropdown, outros = input) -->
+                <div class="form-group" id="cidadeContainer">
                     <label class="required">Cidade</label>
                     <input type="text" name="cidade" id="cidade" required placeholder="Digite sua cidade">
                 </div>
-                <!-- 10. CEP e Estado -->
-                <div class="endereco-grid">
-                    <div class="form-group">
-                        <label class="required">CEP</label>
-                        <input type="text" name="cep" id="cepEndereco" required placeholder="00000-000" maxlength="9">
-                    </div>
-                    <div class="form-group">
-                        <label class="required">Estado</label>
-                        <select name="estado" id="estado" required>
-                            <option value="">Selecione...</option>
-                            <option value="AC">Acre (AC)</option>
-                            <option value="AL">Alagoas (AL)</option>
-                            <option value="AP">Amapá (AP)</option>
-                            <option value="AM">Amazonas (AM)</option>
-                            <option value="BA">Bahia (BA)</option>
-                            <option value="CE">Ceará (CE)</option>
-                            <option value="DF">Distrito Federal (DF)</option>
-                            <option value="ES">Espírito Santo (ES)</option>
-                            <option value="GO">Goiás (GO)</option>
-                            <option value="MA">Maranhão (MA)</option>
-                            <option value="MT">Mato Grosso (MT)</option>
-                            <option value="MS">Mato Grosso do Sul (MS)</option>
-                            <option value="MG">Minas Gerais (MG)</option>
-                            <option value="PA">Pará (PA)</option>
-                            <option value="PB">Paraíba (PB)</option>
-                            <option value="PR">Paraná (PR)</option>
-                            <option value="PE">Pernambuco (PE)</option>
-                            <option value="PI">Piauí (PI)</option>
-                            <option value="RJ">Rio de Janeiro (RJ)</option>
-                            <option value="RN">Rio Grande do Norte (RN)</option>
-                            <option value="RS">Rio Grande do Sul (RS)</option>
-                            <option value="RO">Rondônia (RO)</option>
-                            <option value="RR">Roraima (RR)</option>
-                            <option value="SC">Santa Catarina (SC)</option>
-                            <option value="SP">São Paulo (SP)</option>
-                            <option value="SE">Sergipe (SE)</option>
-                            <option value="TO">Tocantins (TO)</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- 11. Observações -->
+                <!-- 12. Observações -->
                 <div class="form-group">
                     <label>Observações</label>
                     <textarea name="observacoes" id="observacoes" placeholder="Informações adicionais..."></textarea>
+                </div>
+                <!-- Card de Frete Calculado (acima do PIX) -->
+                <div class="frete-calculado-box" id="freteCalculadoBox">
+                    <span class="emoji-grande">🚚</span>
+                    <h3>Frete Calculado Automaticamente</h3>
+                    <div class="frete-valor" id="freteValor">R$ 0,00</div>
+                    <div class="frete-descricao" id="freteDescricao">Aguardando preenchimento do endereço...</div>
+                    <div class="frete-cidade-info" id="freteCidadeInfo"></div>
+                </div>
+                <!-- Card Outros Estados -->
+                <div class="outros-estados-box" id="outrosEstadosBox">
+                    <span class="emoji-grande">📦</span>
+                    <h3>🌎 Envio para Outros Estados</h3>
+                    <p>Iremos pesar seu pacote e retornaremos com os menores valores de frete encontrados nas melhores plataformas de envio.<br><br><strong>💬 O orçamento será enviado via Direct do Instagram.</strong></p>
                 </div>
                 <!-- Área de PIX (aparece automaticamente para SC) -->
                 <div class="pagamento-area" id="pagamentoArea">
@@ -466,6 +467,55 @@
             'PALHOCA', 'SANTO AMARO DA IMPERATRIZ', 'SAO JOSE'
         ];
 
+        const TODAS_CIDADES_SC = [
+            "Abdon Batista", "Abelardo Luz", "Agrolandia", "Agronomica", "Agua Doce", "Aguas de Chapeco",
+            "Aguas Frias", "Aguas Mornas", "Alfredo Wagner", "Alto Bela Vista", "Anchieta", "Angelina",
+            "Anita Garibaldi", "Anitapolis", "Antonio Carlos", "Apiuna", "Arabuta", "Araquari", "Ararangua",
+            "Armazem", "Arroio Trinta", "Atalanta", "Aurora", "Balneario Arroio do Silva", "Balneario Barra do Sul",
+            "Balneario Camboriu", "Balneario Gaivota", "Balneario Picarras", "Balneario Rincao", "Bandeirante",
+            "Barra Bonita", "Barra Velha", "Bela Vista do Toldo", "Belmonte", "Benedito Novo", "Biguacu",
+            "Blumenau", "Bocaina do Sul", "Bombinhas", "Bom Jardim da Serra", "Bom Jesus", "Bom Jesus do Oeste",
+            "Bom Retiro", "Botuvera", "Braco do Norte", "Braco do Trombudo", "Brunopolis", "Brusque",
+            "Cacador", "Caibi", "Calmon", "Camboriu", "Campo Alegre", "Campo Belo do Sul", "Campo Ere",
+            "Campos Novos", "Canelinha", "Canoinhas", "Capao Alto", "Capinzal", "Capivari de Baixo",
+            "Catanduvas", "Caxambu do Sul", "Celso Ramos", "Cerro Negro", "Chapadao do Lageado", "Chapeco",
+            "Cocal do Sul", "Concordia", "Cordilheira Alta", "Coronel Freitas", "Coronel Martins", "Correia Pinto",
+            "Criciuma", "Cunha Pora", "Cunhatai", "Curitibanos", "Descanso", "Dionisio Cerqueira", "Dona Emma",
+            "Doutor Pedrinho", "Entre Rios", "Ermo", "Erval Velho", "Faxinal dos Guedes", "Flor do Sertao",
+            "Florianopolis", "Formosa do Sul", "Forquilhinha", "Fraiburgo", "Frei Rogerio", "Galvao", "Garopaba",
+            "Garuva", "Gaspar", "Governador Celso Ramos", "Grao-Para", "Gravatal", "Guabiruba", "Guaraciaba",
+            "Guaramirim", "Guatambu", "Herval d'Oeste", "Ibiam", "Ibicare", "Ibirama", "Icara", "Ilhota",
+            "Imarui", "Imbituba", "Imbuia", "Indaial", "Iomere", "Ipira", "Ipora do Oeste", "Ipuacu",
+            "Ipumirim", "Iraceminha", "Irani", "Irati", "Irineopolis", "Ita", "Itaiopolis", "Itajai",
+            "Itapema", "Itapiranga", "Itapoa", "Ituporanga", "Jabora", "Jacinto Machado", "Jaguaruna",
+            "Jaragua do Sul", "Jardinopolis", "Joacaba", "Joinville", "Jose Boiteux", "Jupia", "Lacerdopolis",
+            "Lages", "Laguna", "Lajeado Grande", "Laurentino", "Lauro Muller", "Lebon Regis", "Leoberto Leal",
+            "Lindoia do Sul", "Lontras", "Luiz Alves", "Luzerna", "Macieira", "Mafra", "Major Gercino",
+            "Major Vieira", "Maracaja", "Maravilha", "Marema", "Massaranduba", "Matos Costa", "Meleiro",
+            "Mirim Doce", "Modelo", "Mondai", "Monte Carlo", "Monte Castelo", "Morro da Fumaca", "Morro Grande",
+            "Navegantes", "Nova Erechim", "Nova Itaberaba", "Nova Trento", "Nova Veneza", "Novo Horizonte",
+            "Orleans", "Otacilio Costa", "Ouro", "Ouro Verde", "Paial", "Painel", "Palhoca", "Palma Sola",
+            "Palmeira", "Palmitos", "Papanduva", "Paraiso", "Passo de Torres", "Passos Maia", "Paulo Lopes",
+            "Pedras Grandes", "Penha", "Peritiba", "Pescaria Brava", "Petrolandia", "Pinhalzinho",
+            "Pinheiro Preto", "Piratuba", "Planalto Alegre", "Pomerode", "Ponte Alta", "Ponte Alta do Norte",
+            "Ponte Serrada", "Porto Belo", "Porto Uniao", "Pouso Redondo", "Praia Grande",
+            "Presidente Castelo Branco", "Presidente Getulio", "Presidente Nereu", "Princesa", "Quilombo",
+            "Rancho Queimado", "Rio das Antas", "Rio do Campo", "Rio do Oeste", "Rio dos Cedros", "Rio do Sul",
+            "Rio Fortuna", "Rio Negrinho", "Rio Rufino", "Riqueza", "Rodeio", "Romelandia", "Salete",
+            "Saltinho", "Salto Veloso", "Sangao", "Santa Cecilia", "Santa Helena", "Santa Rosa de Lima",
+            "Santa Rosa do Sul", "Santa Terezinha", "Santa Terezinha do Progresso", "Santiago do Sul",
+            "Santo Amaro da Imperatriz", "Sao Bento do Sul", "Sao Bernardino", "Sao Bonifacio", "Sao Carlos",
+            "Sao Cristovao do Sul", "Sao Domingos", "Sao Francisco do Sul", "Sao Joao Batista",
+            "Sao Joao do Itaperiu", "Sao Joao do Oeste", "Sao Joao do Sul", "Sao Joaquim", "Sao Jose",
+            "Sao Jose do Cedro", "Sao Jose do Cerrito", "Sao Lourenco do Oeste", "Sao Ludgero",
+            "Sao Martinho", "Sao Miguel da Boa Vista", "Sao Miguel do Oeste", "Sao Pedro de Alcantara",
+            "Saudades", "Schroeder", "Seara", "Serra Alta", "Sideropolis", "Sombrio", "Sul Brasil", "Taio",
+            "Tangara", "Tigrinhos", "Tijucas", "Timbe do Sul", "Timbo", "Timbo Grande", "Tres Barras",
+            "Treviso", "Treze de Maio", "Treze Tilias", "Trombudo Central", "Tubarao", "Tunapolis", "Turvo",
+            "Uniao do Oeste", "Urubici", "Urupema", "Urussanga", "Vargeao", "Vargem", "Vargem Bonita",
+            "Vidal Ramos", "Videira", "Vitor Meireles", "Witmarsum", "Xanxere", "Xavantina", "Xaxim", "Zortea"
+        ];
+
         var supabaseClient = null, supabaseConectado = false, clienteIdSistema = null, modoAcesso = 'publico', nomeEmpresa = '';
         const STORAGE_CONFIG = 'solicitacao_config';
         const CONFIG_PADRAO = {
@@ -495,9 +545,66 @@
             verificarCamposObrigatoriosPIX();
         });
 
+        function atualizarCampoCidade(estado) {
+            const cidadeContainer = document.getElementById('cidadeContainer');
+            const cidadeAtualValor = document.getElementById('cidade') ? document.getElementById('cidade').value : '';
+
+            if (estado === 'SC') {
+                // Criar select com todas as cidades de SC
+                let optionsHtml = '<option value="">Selecione a cidade...</option>';
+                TODAS_CIDADES_SC.forEach(function(cidade) {
+                    optionsHtml += '<option value="' + cidade + '">' + cidade + '</option>';
+                });
+
+                cidadeContainer.innerHTML = 
+                    '<label class="required">Cidade</label>' +
+                    '<select name="cidade" id="cidade" required>' + optionsHtml + '</select>';
+            } else {
+                // Input de texto para outros estados
+                cidadeContainer.innerHTML = 
+                    '<label class="required">Cidade</label>' +
+                    '<input type="text" name="cidade" id="cidade" required placeholder="Digite sua cidade">';
+            }
+
+            // Restaurar valor se existia
+            if (cidadeAtualValor) {
+                const novoCampo = document.getElementById('cidade');
+                if (novoCampo) {
+                    if (novoCampo.tagName === 'SELECT') {
+                        // Verificar se a cidade existe na lista
+                        const optionExists = Array.from(novoCampo.options).some(opt => opt.value === cidadeAtualValor);
+                        if (optionExists) novoCampo.value = cidadeAtualValor;
+                    } else {
+                        novoCampo.value = cidadeAtualValor;
+                    }
+                }
+            }
+
+            // Adicionar event listener ao novo campo
+            const novoCampoCidade = document.getElementById('cidade');
+            if (novoCampoCidade) {
+                if (novoCampoCidade.tagName === 'SELECT') {
+                    novoCampoCidade.addEventListener('change', function() {
+                        calcularFrete();
+                    });
+                } else {
+                    novoCampoCidade.addEventListener('input', function() {
+                        clearTimeout(window.cidadeTimeout);
+                        window.cidadeTimeout = setTimeout(function() {
+                            calcularFrete();
+                        }, 500);
+                    });
+                    novoCampoCidade.addEventListener('blur', function() {
+                        calcularFrete();
+                    });
+                }
+            }
+        }
+
         function calcularFrete() {
             const estado = document.getElementById('estado').value;
-            const cidade = document.getElementById('cidade').value.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const cidadeCampo = document.getElementById('cidade');
+            const cidade = cidadeCampo ? cidadeCampo.value.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
 
             estadoAtual = estado;
             cidadeAtual = cidade;
@@ -579,7 +686,7 @@
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
-            const cidade = document.getElementById('cidade').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
             const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
 
@@ -620,7 +727,7 @@
             const numero = document.getElementById('numero').value.trim();
             const complemento = document.getElementById('complemento').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
-            const cidade = document.getElementById('cidade').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
             const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
             const observacoes = document.getElementById('observacoes').value.trim();
@@ -671,10 +778,24 @@
                     if (dados.numero) document.getElementById('numero').value = dados.numero;
                     if (dados.complemento) document.getElementById('complemento').value = dados.complemento;
                     if (dados.bairro) document.getElementById('bairro').value = dados.bairro;
-                    if (dados.cidade) document.getElementById('cidade').value = dados.cidade;
-                    if (dados.estado) document.getElementById('estado').value = dados.estado;
                     if (dados.cep) document.getElementById('cepEndereco').value = dados.cep;
                     if (dados.observacoes) document.getElementById('observacoes').value = dados.observacoes;
+
+                    if (dados.estado) {
+                        document.getElementById('estado').value = dados.estado;
+                        atualizarCampoCidade(dados.estado);
+                        if (dados.cidade) {
+                            const campoCidade = document.getElementById('cidade');
+                            if (campoCidade) {
+                                if (campoCidade.tagName === 'SELECT') {
+                                    const optionExists = Array.from(campoCidade.options).some(opt => opt.value === dados.cidade);
+                                    if (optionExists) campoCidade.value = dados.cidade;
+                                } else {
+                                    campoCidade.value = dados.cidade;
+                                }
+                            }
+                        }
+                    }
 
                     if (dados.estado && dados.cidade) {
                         setTimeout(function() { calcularFrete(); }, 100);
@@ -948,16 +1069,9 @@
                 }
             });
 
+            // Estado - atualiza campo cidade e calcula frete
             document.getElementById('estado').addEventListener('change', function() {
-                calcularFrete();
-            });
-            document.getElementById('cidade').addEventListener('input', function() {
-                clearTimeout(window.cidadeTimeout);
-                window.cidadeTimeout = setTimeout(function() {
-                    calcularFrete();
-                }, 500);
-            });
-            document.getElementById('cidade').addEventListener('blur', function() {
+                atualizarCampoCidade(this.value);
                 calcularFrete();
             });
 
@@ -974,7 +1088,7 @@
                 if (e.target === this) fecharConfiguracoes();
             });
 
-            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'email', 'rua', 'numero', 'bairro', 'cidade', 'cepEndereco', 'estado'];
+            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'email', 'rua', 'numero', 'bairro', 'cepEndereco', 'estado'];
             camposObrigatorios.forEach(function(id) {
                 const campo = document.getElementById(id);
                 if (campo) {
@@ -1247,7 +1361,7 @@
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
-            const cidade = document.getElementById('cidade').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
             const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
 
@@ -1313,9 +1427,22 @@
                         document.getElementById('numero').value = endereco.numero || '';
                         document.getElementById('complemento').value = endereco.complemento || '';
                         document.getElementById('bairro').value = endereco.bairro || '';
-                        document.getElementById('cidade').value = endereco.cidade || '';
                         document.getElementById('cepEndereco').value = endereco.cep || '';
-                        if (endereco.estado) document.getElementById('estado').value = endereco.estado;
+                        if (endereco.estado) {
+                            document.getElementById('estado').value = endereco.estado;
+                            atualizarCampoCidade(endereco.estado);
+                        }
+                        if (endereco.cidade) {
+                            const campoCidade = document.getElementById('cidade');
+                            if (campoCidade) {
+                                if (campoCidade.tagName === 'SELECT') {
+                                    const optionExists = Array.from(campoCidade.options).some(opt => opt.value === endereco.cidade);
+                                    if (optionExists) campoCidade.value = endereco.cidade;
+                                } else {
+                                    campoCidade.value = endereco.cidade;
+                                }
+                            }
+                        }
                         enderecoIdAtual = endereco.id;
                         enderecoOriginal = { id: endereco.id, rua: endereco.rua || '', numero: endereco.numero || '', complemento: endereco.complemento || '', bairro: endereco.bairro || '', cidade: endereco.cidade || '', estado: endereco.estado || '', cep: endereco.cep || '' };
                     }
@@ -1323,11 +1450,11 @@
                     enderecoFoiAlterado = false;
                     document.getElementById('dadosCarregados').classList.add('show');
                     document.getElementById('avisoEnderecoAlterado').classList.remove('show');
-                    ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'bairro', 'cidade', 'cepEndereco'].forEach(function(id) {
+                    ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'bairro', 'cepEndereco'].forEach(function(id) {
                         const campo = document.getElementById(id);
                         if (campo && campo.value) { campo.style.backgroundColor = '#E8F5E9'; campo.style.borderColor = '#4CAF50'; setTimeout(function() { campo.style.backgroundColor = ''; campo.style.borderColor = ''; }, 2000); }
                     });
-                    if (document.getElementById('estado').value && document.getElementById('cidade').value) {
+                    if (document.getElementById('estado').value && document.getElementById('cidade') && document.getElementById('cidade').value) {
                         setTimeout(function() { calcularFrete(); }, 100);
                     }
                     verificarCamposObrigatoriosPIX();
@@ -1450,7 +1577,7 @@
             if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
 
             const estado = document.getElementById('estado').value;
-            const cidade = document.getElementById('cidade').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
 
             if (!estado || !cidade) {
                 alert('⚠️ Selecione o estado e informe a cidade.');
