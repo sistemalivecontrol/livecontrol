@@ -462,6 +462,16 @@
         const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
         emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
 
+        // === CONFIGURAÇÃO EVOLUTION API (WhatsApp) ===
+        // Instância hospedada no Render
+        const EVOLUTION_CONFIG = {
+            BASE_URL: 'https://evolution-api-o12a.onrender.com',
+            API_KEY: '8117861c85b102b1fafd496132bba462',       // Substitua pela sua API Key
+            INSTANCE: 'pingodegente'             // Nome da instância
+        };
+        // Ativar/desativar envio de WhatsApp
+        const EVOLUTION_ATIVO = true;
+
         const CIDADES_GRANDE_FLORIPA = [
             'AGUAS MORNAS', 'BIGUACU', 'FLORIANOPOLIS', 'GOVERNADOR CELSO RAMOS',
             'PALHOCA', 'SANTO AMARO DA IMPERATRIZ', 'SAO JOSE'
@@ -1569,6 +1579,92 @@
             } catch (error) { console.error('❌ Erro ao enviar e-mail:', error); return false; }
         }
 
+        // === FUNÇÃO: Enviar confirmação via WhatsApp (Evolution API) ===
+        async function enviarWhatsAppConfirmacao(dadosSolicitacao) {
+            if (!EVOLUTION_ATIVO || !EVOLUTION_CONFIG.BASE_URL || !EVOLUTION_CONFIG.API_KEY || !EVOLUTION_CONFIG.INSTANCE) {
+                console.log('[WHATSAPP] Evolution API não configurada. Pulando envio de WhatsApp.');
+                return false;
+            }
+
+            try {
+                // Formatar número de WhatsApp (remover não-dígitos e garantir código do país)
+                let numeroWhats = dadosSolicitacao.whatsapp.replace(/\D/g, '');
+                // Se não tiver código do país (55 para Brasil), adicionar
+                if (!numeroWhats.startsWith('55') && numeroWhats.length >= 10) {
+                    numeroWhats = '55' + numeroWhats;
+                }
+
+                const textoMensagem = 
+                    '📦 *Solicitação de Entrega - ' + (nomeEmpresa || 'Pingo de Gente') + '*
+
+' +
+                    '✅ Sua solicitação foi recebida com sucesso!
+
+' +
+                    '*Número:* ' + dadosSolicitacao.numeroSolicitacao + '
+' +
+                    '*Nome:* ' + dadosSolicitacao.nome + '
+' +
+                    '*Data:* ' + dadosSolicitacao.dataSolicitacao + '
+' +
+                    '*Região:* ' + dadosSolicitacao.regiao + '
+' +
+                    '*Endereço:* ' + dadosSolicitacao.rua + ', ' + dadosSolicitacao.numero + 
+                    (dadosSolicitacao.complemento ? ' - ' + dadosSolicitacao.complemento : '') + '
+' +
+                    '*Bairro:* ' + dadosSolicitacao.bairro + '
+' +
+                    '*Cidade:* ' + dadosSolicitacao.cidade + '
+' +
+                    '*CEP:* ' + dadosSolicitacao.cep + '
+
+' +
+                    (dadosSolicitacao.observacoes ? '*Observações:* ' + dadosSolicitacao.observacoes + '
+
+' : '') +
+                    'Guarde este número para referência futura.
+
+' +
+                    '💬 Dúvidas? Fale conosco pelo Instagram @pingodegentelojaebrecho';
+
+                const payload = {
+                    number: numeroWhats,
+                    text: textoMensagem,
+                    options: {
+                        delay: 1200,
+                        presence: 'composing',
+                        linkPreview: false
+                    }
+                };
+
+                console.log('[WHATSAPP] Enviando mensagem para:', numeroWhats);
+                console.log('[WHATSAPP] URL:', EVOLUTION_CONFIG.BASE_URL + '/message/sendText/' + EVOLUTION_CONFIG.INSTANCE);
+
+                const response = await fetch(EVOLUTION_CONFIG.BASE_URL + '/message/sendText/' + EVOLUTION_CONFIG.INSTANCE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': EVOLUTION_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                console.log('[WHATSAPP] Resposta:', data);
+
+                if (response.ok) {
+                    console.log('✅ WhatsApp enviado com sucesso!');
+                    return true;
+                } else {
+                    console.error('❌ Erro ao enviar WhatsApp:', data);
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erro na requisição WhatsApp:', error);
+                return false;
+            }
+        }
+
         async function enviarFormulario(e, modoAutomatico) {
             e.preventDefault();
             modoAutomatico = modoAutomatico || false;
@@ -1781,6 +1877,24 @@
                 if (email) {
                     await enviarEmailConfirmacao({
                         email: email,
+                        numeroSolicitacao: numeroSolicitacao,
+                        nome: nome,
+                        dataSolicitacao: dataSolicitacao,
+                        regiao: regiao,
+                        rua: rua,
+                        numero: numero,
+                        complemento: complemento,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        cep: cep,
+                        observacoes: observacoes
+                    });
+                }
+
+                // Enviar WhatsApp automaticamente (se configurado)
+                if (whatsapp) {
+                    await enviarWhatsAppConfirmacao({
+                        whatsapp: whatsapp,
                         numeroSolicitacao: numeroSolicitacao,
                         nome: nome,
                         dataSolicitacao: dataSolicitacao,
