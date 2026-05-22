@@ -1927,9 +1927,23 @@ Qualquer dúvida, estou por aqui! 💕
                 numeroLimpo = '55' + numeroLimpo;
             }
             
+            // Tentativa 1 com timeout de 20s
+            let resultado = await _enviarWhatsApp(numeroLimpo, texto, 20000);
+            
+            // Se falhou por timeout, tentar mais uma vez
+            if (!resultado.sucesso && resultado.erro === 'Timeout') {
+                console.log('[EVOLUTION] Timeout na tentativa 1, aguardando 3s para retry...');
+                await new Promise(r => setTimeout(r, 3000));
+                resultado = await _enviarWhatsApp(numeroLimpo, texto, 25000);
+            }
+            
+            return resultado;
+        }
+
+        async function _enviarWhatsApp(numeroLimpo, texto, timeoutMs) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
                 const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
                     method: 'POST',
@@ -1949,7 +1963,6 @@ Qualquer dúvida, estou por aqui! 💕
                 console.log('[EVOLUTION] Response:', JSON.stringify(data));
                 
                 // WORKAROUND: Evolution API v2.2.3 tem bug Prisma que retorna 400
-                // mesmo quando a mensagem é enviada. Detectamos e tratamos como sucesso.
                 if (!response.ok) {
                     const isPrismaError = data.response &&
                                          data.response.message &&
@@ -1957,7 +1970,7 @@ Qualquer dúvida, estou por aqui! 💕
                                          data.response.message.some(m => typeof m === 'string' && m.includes('Prisma'));
                     
                     if (isPrismaError) {
-                        console.warn('[EVOLUTION] Workaround Prisma: erro 400 ignorado, mensagem enviada');
+                        console.warn('[EVOLUTION] Workaround Prisma: erro 400 ignorado');
                         return { sucesso: true, dados: data, warning: 'Erro interno do servidor (Prisma), mas mensagem foi enviada' };
                     }
                     
@@ -1967,8 +1980,8 @@ Qualquer dúvida, estou por aqui! 💕
                 return { sucesso: true, dados: data };
             } catch (erro) {
                 if (erro.name === 'AbortError') {
-                    console.log('⏱️ Timeout ao enviar WhatsApp (8s).');
-                    return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' } };
+                    console.log(`⏱️ Timeout ao enviar WhatsApp (${timeoutMs}ms)`);
+                    return { sucesso: false, erro: 'Timeout', dados: { status: 'TIMEOUT' } };
                 }
                 console.error('❌ Erro ao enviar WhatsApp:', erro);
                 return { sucesso: false, erro: erro.message };
@@ -2038,6 +2051,8 @@ Qualquer dúvida, estou por aqui! 💕
                     } else {
                         showAlert('✅ Mensagem de rastreamento enviada via WhatsApp!', 'success');
                     }
+                } else if (resultado.erro === 'Timeout') {
+                    showAlert('⏱️ A API do WhatsApp está demorando para responder. A mensagem pode ter sido enviada. Verifique o WhatsApp do cliente.', 'warning');
                 } else {
                     showAlert('⚠️ Mensagem não enviada: ' + (resultado.erro || 'Erro desconhecido'), 'warning');
                 }
