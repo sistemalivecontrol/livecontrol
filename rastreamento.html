@@ -1015,14 +1015,15 @@ function aplicarFiltros() {
             document.getElementById('modalSolicitacao').classList.add('active');
         }
 
-        async function editarSolicitacao(id) {
+        function editarSolicitacao(id) {
             const s = solicitacoes.find(x => x.id === id);
             if (!s) return;
             document.getElementById('modalTitle').textContent = 'Editar Solicitação';
             document.getElementById('solicitacaoId').value = s.id;
             document.getElementById('clienteSelect').value = s.cliente_pg_id || '';
-            await carregarEnderecosCliente(s.cliente_pg_id);
-            document.getElementById('enderecoSelect').value = s.endereco_id || '';
+            carregarEnderecosCliente(s.cliente_pg_id).then(() => {
+                document.getElementById('enderecoSelect').value = s.endereco_id || '';
+            });
             document.getElementById('dataCorte').value = s.data_corte_semanal ? new Date(s.data_corte_semanal).toISOString().slice(0,16) : '';
             document.getElementById('semanaEnvio').value = s.semana_envio || '';
             document.getElementById('dataEnvio').value = s.data_envio || '';
@@ -1049,7 +1050,7 @@ function aplicarFiltros() {
         // ============================================
         // SALVAR
         // ============================================
-        async function salvarSolicitacao() {
+        function salvarSolicitacao() {
             const id = document.getElementById('solicitacaoId').value;
             const clientePgId = document.getElementById('clienteSelect').value;
             const enderecoId = document.getElementById('enderecoSelect').value;
@@ -1076,21 +1077,23 @@ function aplicarFiltros() {
                 atualizado_em: new Date().toISOString()
             };
 
-            try {
-                if (id) {
-                    const { error } = await supabaseClient.from('solicitacoes_pg').update(dados).eq('id', id);
-                    if (error) throw error;
-                    showAlert('Atualizado!', 'success');
-                } else {
-                    dados.criado_em = new Date().toISOString();
-                    dados.numero_solicitacao = `SOL-${new Date().getFullYear()}-${Math.floor(Math.random()*9999).toString().padStart(4,'0')}`;
-                    const { error } = await supabaseClient.from('solicitacoes_pg').insert([dados]);
-                    if (error) throw error;
-                    showAlert('Criado!', 'success');
-                }
-                fecharModal();
-                carregarSolicitacoes();
-            } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
+            (async () => {
+                try {
+                    if (id) {
+                        const { error } = await supabaseClient.from('solicitacoes_pg').update(dados).eq('id', id);
+                        if (error) throw error;
+                        showAlert('Atualizado!', 'success');
+                    } else {
+                        dados.criado_em = new Date().toISOString();
+                        dados.numero_solicitacao = `SOL-${new Date().getFullYear()}-${Math.floor(Math.random()*9999).toString().padStart(4,'0')}`;
+                        const { error } = await supabaseClient.from('solicitacoes_pg').insert([dados]);
+                        if (error) throw error;
+                        showAlert('Criado!', 'success');
+                    }
+                    fecharModal();
+                    carregarSolicitacoes();
+                } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
+            })();
         }
 
         // ============================================
@@ -1137,38 +1140,40 @@ function aplicarFiltros() {
         // ============================================
         // EXCLUIR - COM APAGUE DE RASTREAMENTOS PRIMEIRO
         // ============================================
-        async function excluirSolicitacao(id) {
-            if (!confirm('Tem certeza que deseja excluir esta solicitação?
+        function excluirSolicitacao(id) {
+            if (!confirm('Tem certeza que deseja excluir esta solicitação?\n\nOs rastreamentos vinculados também serão removidos.')) return;
 
-Os rastreamentos vinculados também serão removidos.')) return;
-            try {
-                // 1. Apagar rastreamentos vinculados primeiro (evita erro 409 Conflict)
-                const { error: erroRastreio } = await supabaseClient
-                    .from('rastreamentos_pg')
-                    .delete()
-                    .eq('solicitacao_id', id);
+            (async () => {
+                try {
+                    // 1. Apagar rastreamentos vinculados primeiro (evita erro 409 Conflict)
+                    const { error: erroRastreio } = await supabaseClient
+                        .from('rastreamentos_pg')
+                        .delete()
+                        .eq('solicitacao_id', id);
 
-                if (erroRastreio) {
-                    console.warn('Aviso ao apagar rastreamentos:', erroRastreio.message);
+                    if (erroRastreio) {
+                        console.warn('Aviso ao apagar rastreamentos:', erroRastreio.message);
+                    }
+
+                    // 2. Apagar a solicitação
+                    const { error } = await supabaseClient.from('solicitacoes_pg').delete().eq('id', id);
+                    if (error) throw error;
+
+                    showAlert('✅ Solicitação excluída com sucesso!', 'success');
+                    carregarSolicitacoes();
+                } catch (error) { 
+                    showAlert('❌ Erro ao excluir: ' + error.message, 'error'); 
                 }
-
-                // 2. Apagar a solicitação
-                const { error } = await supabaseClient.from('solicitacoes_pg').delete().eq('id', id);
-                if (error) throw error;
-
-                showAlert('✅ Solicitação excluída com sucesso!', 'success');
-                carregarSolicitacoes();
-            } catch (error) { 
-                showAlert('❌ Erro ao excluir: ' + error.message, 'error'); 
-            }
+            })();
         }
 
         // ============================================
         // PDF - LAYOUT IGUAL AO ANTIGO (PORTRAIT)
         // ============================================
-        async function gerarPDF() {
+        function gerarPDF() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
 
+            (async () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
 
@@ -1292,12 +1297,15 @@ Os rastreamentos vinculados também serão removidos.')) return;
             return isNaN(d.getTime()) ? data : d.toLocaleDateString('pt-BR');
         }
 
+                    })();
+
         // ============================================
         // ETIQUETAS PDF (4 POR PAGINA A4)
         // ============================================
-        async function gerarEtiquetas() {
+        function gerarEtiquetas() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
 
+            (async () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('portrait', 'mm', 'a4');
 
@@ -1417,6 +1425,8 @@ Os rastreamentos vinculados também serão removidos.')) return;
             const novaAba = window.open(pdfBlobUrl, '_blank');
             if (!novaAba) alert('❌ Permita popups para este site.');
         }
+
+                    })();
 
         // ============================================
         // ETIQUETAS MODAL (COPIAR CAMPOS)
@@ -1559,14 +1569,14 @@ Os rastreamentos vinculados também serão removidos.')) return;
             }
         }
 
-        async function abrirModalRastreio(solicitacaoId) {
+        function abrirModalRastreio(solicitacaoId) {
             const sol = solicitacoes.find(s => s.id === solicitacaoId);
             if (!sol) return;
 
             document.getElementById('rastreioSolicitacaoId').value = solicitacaoId;
             document.getElementById('rastreioId').value = sol.rastreamento_id || '';
 
-            await mostrarHistoricoRastreamentos(solicitacaoId);
+            mostrarHistoricoRastreamentos(solicitacaoId).then(() => {
 
             if (sol.rastreamento_id) {
                 const rastRecente = rastreamentosCache[solicitacaoId]?.[0];
@@ -1590,6 +1600,7 @@ Os rastreamentos vinculados também serão removidos.')) return;
             // Preview de código de rastreio
             document.getElementById('codigoPreview').classList.remove('active');
             document.getElementById('modalRastreio').classList.add('active');
+            });
         }
 
         async function mostrarHistoricoRastreamentos(solicitacaoId) {
@@ -1691,7 +1702,7 @@ Os rastreamentos vinculados também serão removidos.')) return;
             }
         }
 
-        async function apagarRastreio() {
+        function apagarRastreio() {
             const rastreioId = document.getElementById('rastreioId').value;
             const solicitacaoId = document.getElementById('rastreioSolicitacaoId').value;
 
@@ -1703,6 +1714,7 @@ Os rastreamentos vinculados também serão removidos.')) return;
             if (!confirm('🗑️ Tem certeza que deseja APAGAR este rastreamento?\n\nEsta ação não pode ser desfeita!')) return;
             if (!confirm('⚠️ CONFIRMAÇÃO FINAL:\n\nO rastreamento será permanentemente removido. Deseja continuar?')) return;
 
+            (async () => {
             try {
                 const { error } = await supabaseClient
                     .from('rastreamentos_pg')
@@ -1738,7 +1750,8 @@ Os rastreamentos vinculados também serão removidos.')) return;
                 console.error('Erro ao apagar rastreio:', e);
                 showAlert('❌ Erro ao apagar rastreamento: ' + e.message, 'error');
             }
-        }
+        
+            })();}
 
         
 
