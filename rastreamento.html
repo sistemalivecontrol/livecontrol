@@ -1964,7 +1964,6 @@ Qualquer dúvida, estou por aqui! 💕
                 
                 // Tratar erro 400: número não existe no WhatsApp
                 if (!response.ok) {
-                    // Verificar se é erro de número não existente
                     if (data.response && data.response.message && Array.isArray(data.response.message)) {
                         const msg = data.response.message[0];
                         if (msg && msg.exists === false) {
@@ -2055,12 +2054,20 @@ Qualquer dúvida, estou por aqui! 💕
                 const resultado = await enviarRastreamentoWhatsApp(dados);
                 
                 if (resultado.sucesso) {
-                    if (resultado.warning) {
-                        showAlert('✅ Mensagem de rastreamento enviada via WhatsApp!', 'success');
-                        console.log('[WHATSAPP] Workaround aplicado:', resultado.warning);
-                    } else {
-                        showAlert('✅ Mensagem de rastreamento enviada via WhatsApp!', 'success');
-                    }
+                    // ✅ MENSAGEM ENVIADA COM SUCESSO
+                    showAlert('✅ Mensagem enviada com sucesso para ' + cliente.whatsapp + '!', 'success');
+                    console.log('[WHATSAPP] ✅ Mensagem enviada para', cliente.whatsapp);
+                    
+                    // Efeito visual no botão: mudar para verde por 3 segundos
+                    btn.innerHTML = '✅ Enviado!';
+                    btn.style.background = 'linear-gradient(135deg, #4CAF50, #388E3C)';
+                    setTimeout(() => {
+                        btn.innerHTML = textoOriginal;
+                        btn.style.background = '';
+                        btn.disabled = false;
+                    }, 3000);
+                    return; // Não executar finally imediatamente
+                    
                 } else if (resultado.erro === 'NÚMERO_INVÁLIDO') {
                     showAlert('📱 ' + (resultado.mensagem || 'Este número não está cadastrado no WhatsApp'), 'warning');
                 } else if (resultado.erro === 'Timeout') {
@@ -2072,8 +2079,11 @@ Qualquer dúvida, estou por aqui! 💕
                 console.error('Erro ao enviar rastreamento WhatsApp:', erro);
                 showAlert('❌ Erro ao enviar mensagem: ' + erro.message, 'error');
             } finally {
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
+                // Só restaurar o botão se não foi restaurado no sucesso
+                if (btn.innerHTML === '⏳ Enviando...') {
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }
             }
         }
 
