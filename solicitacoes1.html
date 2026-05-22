@@ -473,6 +473,9 @@
             }
             
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+
                 const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
                     method: 'POST',
                     headers: {
@@ -482,13 +485,19 @@
                     body: JSON.stringify({
                         number: numeroLimpo,
                         text: texto
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 
                 const data = await response.json();
                 console.log('✅ WhatsApp enviado:', data);
                 return { sucesso: true, dados: data };
             } catch (erro) {
+                if (erro.name === 'AbortError') {
+                    console.log('⏱️ Timeout ao enviar WhatsApp (8s). Considerando como enviado...');
+                    return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' } };
+                }
                 console.error('❌ Erro ao enviar WhatsApp:', erro);
                 return { sucesso: false, erro: erro.message };
             }
@@ -1351,7 +1360,7 @@ _Pingo de Gente - LiveControl_`;
             if (pollingInterval) clearInterval(pollingInterval);
             pollingInterval = setInterval(async function() {
                 await verificarStatusPagamento();
-            }, 5000);
+            }, 3000);
             verificarStatusPagamento();
         }
 
@@ -1842,9 +1851,9 @@ _Pingo de Gente - LiveControl_`;
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // Enviar e-mail somente se o campo foi preenchido
+                // Enviar e-mail somente se o campo foi preenchido (não bloqueante)
                 if (email && email.trim()) {
-                    await enviarEmailConfirmacao({
+                    enviarEmailConfirmacao({
                         email: email,
                         numeroSolicitacao: numeroSolicitacao,
                         nome: nome,
@@ -1861,41 +1870,41 @@ _Pingo de Gente - LiveControl_`;
                 }
 
                 // ============================================
-                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO (não bloqueante)
                 // ============================================
                 if (whatsapp && whatsapp.trim()) {
-                    try {
-                        await enviarConfirmacaoSolicitacao({
-                            nome: nome,
-                            numeroSolicitacao: numeroSolicitacao,
-                            bairro: bairro,
-                            cidade: cidadeForm,
-                            valorFrete: valorFreteAtual,
-                            whatsapp: whatsapp
-                        });
+                    // Fire-and-forget: envia WhatsApp sem esperar resposta
+                    enviarConfirmacaoSolicitacao({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp
+                    }).then(() => {
                         console.log('✅ WhatsApp de confirmação enviado!');
-                    } catch (errWhatsApp) {
-                        console.error('❌ Erro ao enviar WhatsApp de confirmação:', errWhatsApp);
-                    }
+                    }).catch((err) => {
+                        console.log('⚠️ WhatsApp de confirmação não enviado (não crítico):', err.message || err);
+                    });
                 }
 
                 // ============================================
-                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO (se pagamento confirmado)
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO (não bloqueante)
                 // ============================================
                 if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
-                    try {
-                        await enviarConfirmacaoPagamento({
-                            nome: nome,
-                            numeroSolicitacao: numeroSolicitacao,
-                            bairro: bairro,
-                            cidade: cidadeForm,
-                            valorFrete: valorFreteAtual,
-                            whatsapp: whatsapp
-                        });
+                    // Fire-and-forget: envia WhatsApp sem esperar resposta
+                    enviarConfirmacaoPagamento({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp
+                    }).then(() => {
                         console.log('✅ WhatsApp de pagamento confirmado enviado!');
-                    } catch (errWhatsAppPago) {
-                        console.error('❌ Erro ao enviar WhatsApp de pagamento:', errWhatsAppPago);
-                    }
+                    }).catch((err) => {
+                        console.log('⚠️ WhatsApp de pagamento não enviado (não crítico):', err.message || err);
+                    });
                 }
 
                 if (modoAutomatico) {
