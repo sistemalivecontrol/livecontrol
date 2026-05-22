@@ -1134,32 +1134,16 @@ async function aplicarFiltros() {
         }
 
         // ============================================
-        // EXCLUIR - COM APAGUE DE RASTREAMENTOS PRIMEIRO
+        // EXCLUIR
         // ============================================
         async function excluirSolicitacao(id) {
-            if (!confirm('Tem certeza que deseja excluir esta solicitação?
-
-Os rastreamentos vinculados também serão removidos.')) return;
+            if (!confirm('Tem certeza?')) return;
             try {
-                // 1. Apagar rastreamentos vinculados primeiro (evita erro 409 Conflict)
-                const { error: erroRastreio } = await supabaseClient
-                    .from('rastreamentos_pg')
-                    .delete()
-                    .eq('solicitacao_id', id);
-
-                if (erroRastreio) {
-                    console.warn('Aviso ao apagar rastreamentos:', erroRastreio.message);
-                }
-
-                // 2. Apagar a solicitação
                 const { error } = await supabaseClient.from('solicitacoes_pg').delete().eq('id', id);
                 if (error) throw error;
-
-                showAlert('✅ Solicitação excluída com sucesso!', 'success');
+                showAlert('Excluído!', 'success');
                 carregarSolicitacoes();
-            } catch (error) { 
-                showAlert('❌ Erro ao excluir: ' + error.message, 'error'); 
-            }
+            } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
         }
 
         // ============================================
