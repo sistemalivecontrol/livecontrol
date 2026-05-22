@@ -297,6 +297,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -781,20 +782,48 @@ let solicitacoes = [];
             }
         }
 
-        async function aplicarFiltros() {
-            const numero = document.getElementById('filtroNumero').value;
+        
+// ============================================
+// NORMALIZAÇÃO DE TEXTO (remove acentos, lowercase)
+// ============================================
+function normalizarTexto(texto) {
+    if (!texto) return '';
+    return texto.toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9\s]/g, '')
+        .trim();
+}
+
+function textoContemBusca(texto, busca) {
+    if (!texto || !busca) return false;
+    const textoNormalizado = normalizarTexto(texto);
+    const buscaNormalizada = normalizarTexto(busca);
+    return textoNormalizado.includes(buscaNormalizada);
+}
+
+
+async function aplicarFiltros() {
+            const numero = document.getElementById('filtroNumero').value.trim();
             const status = document.getElementById('filtroStatus').value;
             const dataInicio = document.getElementById('filtroDataInicio').value;
             const dataFim = document.getElementById('filtroDataFim').value;
             const nomeCliente = document.getElementById('filtroNomeCliente').value.trim();
 
             try {
+                // Se tem filtro por nome, usamos abordagem diferente
+                // porque o Supabase não faz ilike com unaccent em relacionamentos
                 let query = supabaseClient.from('solicitacoes_pg')
                     .select(`*, clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)`)
                     .eq('cliente_id', clienteAtual);
+
                 if (numero) query = query.ilike('numero_solicitacao', `%${numero}%`);
                 if (status) query = query.eq('status', status);
-                if (nomeCliente) query = query.ilike('clientes_pg.nome', `%${nomeCliente}%`);
+
+                // NÃO aplicamos filtro de nome no Supabase - faremos no cliente
+                // para ter controle total de acentos e case
+
                 var dataHoraInicio = getDataHoraCompleta('inicio');
                 var dataHoraFim = getDataHoraCompleta('fim');
 
@@ -804,15 +833,25 @@ let solicitacoes = [];
 
                 const { data, error } = await query;
                 if (error) throw error;
-                solicitacoes = data || [];
+
+                let resultado = data || [];
+
+                // FILTRO POR NOME NO LADO DO CLIENTE (com normalização de acentos)
+                if (nomeCliente) {
+                    resultado = resultado.filter(s => {
+                        const nomeClienteFinal = s.clientes_pg?.nome;
+                        if (!nomeClienteFinal) return false;
+                        return textoContemBusca(nomeClienteFinal, nomeCliente);
+                    });
+                }
+
+                solicitacoes = resultado;
                 idsSelecionados.clear();
                 atualizarTabela();
                 atualizarEstatisticas();
                 showAlert(`${solicitacoes.length} solicitação(ões) encontrada(s)`, 'success');
             } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
-        }
-
-        function carregarEnderecosCliente(clienteId) {
+        }function carregarEnderecosCliente(clienteId) {
             const enderecoSelect = document.getElementById('enderecoSelect');
             enderecoSelect.innerHTML = '<option value="">Selecione...</option>';
             if (!clienteId) { enderecoSelect.innerHTML = '<option value="">Selecione o cliente primeiro...</option>'; return; }
