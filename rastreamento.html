@@ -1915,129 +1915,136 @@ Qualquer dúvida, estou por aqui! 💕
 
 
 // ============================================
-// EVOLUTION API - ENVIO DE WHATSAPP
+// EVOLUTION API - ENVIO DE WHATSAPP (CORRIGIDO v2)
 // ============================================
-        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
-        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
-        const EVOLUTION_INSTANCE = 'pingodegente';
+const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
+const EVOLUTION_INSTANCE = 'pingodegente';
 
-        // Função base para enviar mensagem WhatsApp
-        async function enviarWhatsApp(numero, texto) {
-            let numeroLimpo = numero.replace(/\D/g, '');
-            if (!numeroLimpo.startsWith('55')) {
-                numeroLimpo = '55' + numeroLimpo;
-            }
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
+// Função base para enviar mensagem WhatsApp (Evolution API v2)
+// CORREÇÃO: usar textMessage.text no body (não "text" direto)
+async function enviarWhatsApp(numero, texto) {
+    let numeroLimpo = numero.replace(/\D/g, '');
+    if (!numeroLimpo.startsWith('55')) {
+        numeroLimpo = '55' + numeroLimpo;
+    }
 
-                const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': EVOLUTION_API_KEY
-                    },
-                    body: JSON.stringify({
-                        number: numeroLimpo,
-                        text: texto
-                    }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                
-                const data = await response.json();
-                console.log('✅ WhatsApp enviado:', data);
-                return { sucesso: true, dados: data };
-            } catch (erro) {
-                if (erro.name === 'AbortError') {
-                    console.log('⏱️ Timeout ao enviar WhatsApp (8s). Considerando como enviado...');
-                    return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' } };
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        // Evolution API v2: body deve ter textMessage.text
+        const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': EVOLUTION_API_KEY
+            },
+            body: JSON.stringify({
+                number: numeroLimpo,
+                textMessage: {
+                    text: texto
+                },
+                options: {
+                    delay: 1200,
+                    presence: 'composing',
+                    linkPreview: false
                 }
-                console.error('❌ Erro ao enviar WhatsApp:', erro);
-                return { sucesso: false, erro: erro.message };
-            }
+            }),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        const data = await response.json();
+        console.log('✅ WhatsApp enviado:', data);
+        return { sucesso: true, dados: data };
+    } catch (erro) {
+        if (erro.name === 'AbortError') {
+            console.log('⏱️ Timeout ao enviar WhatsApp (8s). Considerando como enviado...');
+            return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' } };
         }
+        console.error('❌ Erro ao enviar WhatsApp:', erro);
+        return { sucesso: false, erro: erro.message };
+    }
+}
 
-        // Mensagem de Rastreamento Enviado
-        async function enviarRastreamentoWhatsApp(dados) {
-            const texto = `Oi ${dados.nome.split(' ')[0]}! 👋\n\n🚚 *Seu pedido foi enviado!*\n\n📦 *Nº do Pedido:* ${dados.numeroSolicitacao}\n🔍 *Código de Rastreio:* ${dados.codigoRastreio}\n🚛 *Transportadora:* ${dados.transportadora}\n\n🔗 *Acompanhe sua entrega:*\n${dados.urlRastreamento}\n\n${dados.dataPrevista ? '📅 *Previsão de Entrega:* ' + dados.dataPrevista + '\n\n' : ''}Qualquer dúvida, estou por aqui! 💕\n\n_Pingo de Gente - LiveControl_`;
-            
-            return await enviarWhatsApp(dados.whatsapp, texto);
+// Mensagem de Rastreamento Enviado
+async function enviarRastreamentoWhatsApp(dados) {
+    const texto = `Oi ${dados.nome.split(' ')[0]}! 👋\n\n🚚 *Seu pedido foi enviado!*\n\n📦 *Nº do Pedido:* ${dados.numeroSolicitacao}\n🔍 *Código de Rastreio:* ${dados.codigoRastreio}\n🚛 *Transportadora:* ${dados.transportadora}\n\n🔗 *Acompanhe sua entrega:*\n${dados.urlRastreamento}\n\n${dados.dataPrevista ? '📅 *Previsão de Entrega:* ' + dados.dataPrevista + '\n\n' : ''}Qualquer dúvida, estou por aqui! 💕\n\n_Pingo de Gente - LiveControl_`;
+
+    return await enviarWhatsApp(dados.whatsapp, texto);
+}
+
+// ============================================
+// ENVIO DE RASTREAMENTO VIA WHATSAPP (BOTÃO)
+// ============================================
+async function enviarRastreamentoWhatsAppClick(solicitacaoId) {
+    const sol = solicitacoes.find(s => s.id === solicitacaoId);
+    if (!sol) {
+        showAlert('Solicitação não encontrada', 'error');
+        return;
+    }
+
+    const cliente = sol.clientes_pg || {};
+    if (!cliente.whatsapp) {
+        showAlert('Cliente não possui WhatsApp cadastrado', 'error');
+        return;
+    }
+
+    if (!sol.codigo_rastreio) {
+        showAlert('Esta solicitação não possui código de rastreio cadastrado', 'error');
+        return;
+    }
+
+    // Gerar URL de rastreamento
+    const urlRastreamento = gerarUrlRastreioWhatsApp(sol);
+
+    // Formatar data prevista
+    let dataPrevista = '';
+    if (sol.data_entrega_prevista) {
+        dataPrevista = new Date(sol.data_entrega_prevista).toLocaleDateString('pt-BR');
+    }
+
+    const dados = {
+        nome: cliente.nome || 'Cliente',
+        numeroSolicitacao: sol.numero_solicitacao || 'N/A',
+        codigoRastreio: sol.codigo_rastreio,
+        transportadora: formatarFormaEnvio(sol.forma_envio),
+        urlRastreamento: urlRastreamento,
+        dataPrevista: dataPrevista,
+        whatsapp: cliente.whatsapp
+    };
+
+    // Mostrar spinner/loading no botão
+    const btn = event.target.closest('button') || event.target;
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '⏳ Enviando...';
+    btn.disabled = true;
+
+    try {
+        const resultado = await enviarRastreamentoWhatsApp(dados);
+
+        if (resultado.sucesso) {
+            showAlert('✅ Mensagem de rastreamento enviada via WhatsApp!', 'success');
+        } else {
+            showAlert('⚠️ Mensagem pode não ter sido enviada. Verifique a Evolution API.', 'warning');
         }
+    } catch (erro) {
+        console.error('Erro ao enviar rastreamento WhatsApp:', erro);
+        showAlert('❌ Erro ao enviar mensagem: ' + erro.message, 'error');
+    } finally {
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    }
+}
 
-        // ============================================
-        // ENVIO DE RASTREAMENTO VIA WHATSAPP (BOTÃO)
-        // ============================================
-        async function enviarRastreamentoWhatsAppClick(solicitacaoId) {
-            const sol = solicitacoes.find(s => s.id === solicitacaoId);
-            if (!sol) {
-                showAlert('Solicitação não encontrada', 'error');
-                return;
-            }
-
-            const cliente = sol.clientes_pg || {};
-            if (!cliente.whatsapp) {
-                showAlert('Cliente não possui WhatsApp cadastrado', 'error');
-                return;
-            }
-
-            if (!sol.codigo_rastreio) {
-                showAlert('Esta solicitação não possui código de rastreio cadastrado', 'error');
-                return;
-            }
-
-            // Gerar URL de rastreamento
-            const urlRastreamento = gerarUrlRastreioWhatsApp(sol);
-
-            // Formatar data prevista
-            let dataPrevista = '';
-            if (sol.data_entrega_prevista) {
-                dataPrevista = new Date(sol.data_entrega_prevista).toLocaleDateString('pt-BR');
-            }
-
-            const dados = {
-                nome: cliente.nome || 'Cliente',
-                numeroSolicitacao: sol.numero_solicitacao || 'N/A',
-                codigoRastreio: sol.codigo_rastreio,
-                transportadora: formatarFormaEnvio(sol.forma_envio),
-                urlRastreamento: urlRastreamento,
-                dataPrevista: dataPrevista,
-                whatsapp: cliente.whatsapp
-            };
-
-            // Mostrar spinner/loading no botão
-            const btn = event.target.closest('button') || event.target;
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = '⏳ Enviando...';
-            btn.disabled = true;
-
-            try {
-                const resultado = await enviarRastreamentoWhatsApp(dados);
-                
-                if (resultado.sucesso) {
-                    showAlert('✅ Mensagem de rastreamento enviada via WhatsApp!', 'success');
-                } else {
-                    showAlert('⚠️ Mensagem pode não ter sido enviada. Verifique a Evolution API.', 'warning');
-                }
-            } catch (erro) {
-                console.error('Erro ao enviar rastreamento WhatsApp:', erro);
-                showAlert('❌ Erro ao enviar mensagem: ' + erro.message, 'error');
-            } finally {
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            }
-        }
-
-        // Gerar URL de rastreamento para WhatsApp
-        function gerarUrlRastreioWhatsApp(sol) {
-            if (!sol.codigo_rastreio) return '';
-            const formaEnvio = sol.forma_envio || 'correios';
-            const geradorUrl = URLS_RASTREAMENTO[formaEnvio];
-            return geradorUrl ? geradorUrl(sol.codigo_rastreio) : `https://www.google.com/search?q=rastreamento+${sol.codigo_rastreio}`;
-        }
-
-        // Logout usa auth.js - window.fazerLogout()
+// Gerar URL de rastreamento para WhatsApp
+function gerarUrlRastreioWhatsApp(sol) {
+    if (!sol.codigo_rastreio) return '';
+    const formaEnvio = sol.forma_envio || 'correios';
+    const geradorUrl = URLS_RASTREAMENTO[formaEnvio];
+    return geradorUrl ? geradorUrl(sol.codigo_rastreio) : `https://www.google.com/search?q=rastreamento+${sol.codigo_rastreio}`;
+}
     </script>
 </body>
 </html>
