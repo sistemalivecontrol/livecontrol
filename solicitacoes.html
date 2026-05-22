@@ -183,6 +183,7 @@
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -245,11 +246,11 @@
                     <label class="required">WhatsApp</label>
                     <input type="tel" name="whatsapp" id="whatsapp" required placeholder="(48) 99999-9999">
                 </div>
-                <!-- 4. E-mail (OBRIGATÓRIO) -->
+                <!-- 4. E-mail -->
                 <div class="form-group">
-                    <label class="required">E-mail</label>
-                    <input type="email" name="email" id="email" required placeholder="seu.email@exemplo.com">
-                    <p class="hint">💡 Uma cópia da solicitação será enviada automaticamente para este e-mail</p>
+                    <label>E-mail</label>
+                    <input type="email" name="email" id="email" placeholder="seu.email@exemplo.com">
+                    <p class="hint">💡 Se informar o e-mail, uma cópia da solicitação será enviada automaticamente</p>
                 </div>
                 <!-- 5. Instagram -->
                 <div class="form-group">
@@ -472,6 +473,9 @@
             }
             
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+
                 const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
                     method: 'POST',
                     headers: {
@@ -481,13 +485,19 @@
                     body: JSON.stringify({
                         number: numeroLimpo,
                         text: texto
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 
                 const data = await response.json();
                 console.log('✅ WhatsApp enviado:', data);
                 return { sucesso: true, dados: data };
             } catch (erro) {
+                if (erro.name === 'AbortError') {
+                    console.log('⏱️ Timeout ao enviar WhatsApp (8s). Considerando como enviado...');
+                    return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' } };
+                }
                 console.error('❌ Erro ao enviar WhatsApp:', erro);
                 return { sucesso: false, erro: erro.message };
             }
@@ -503,7 +513,7 @@
 📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
 💰 *Valor do Frete:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
 
-⏳ Agora é só aguardar o número do rastreamento para acompanhar sua entrega!
+⏳ Agora é só aguardar o recebimento do número do rastreamento!
 
 _Pingo de Gente - LiveControl_`;
             
@@ -749,7 +759,6 @@ _Pingo de Gente - LiveControl_`;
             const nome = document.getElementById('nome').value.trim();
             const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
             const whatsapp = document.getElementById('whatsapp').value.trim();
-            const email = document.getElementById('email').value.trim();
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
@@ -757,7 +766,7 @@ _Pingo de Gente - LiveControl_`;
             const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
 
-            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && email && rua && numero && bairro && cidade && estado && cep;
+            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && rua && numero && bairro && cidade && estado && cep;
 
             const btnGerarPix = document.getElementById('btnGerarPix');
             const avisoCampos = document.getElementById('avisoCamposObrigatorios');
@@ -1154,7 +1163,7 @@ _Pingo de Gente - LiveControl_`;
                 if (e.target === this) fecharConfiguracoes();
             });
 
-            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'email', 'rua', 'numero', 'bairro', 'cepEndereco', 'estado'];
+            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'rua', 'numero', 'bairro', 'cepEndereco', 'estado'];
             camposObrigatorios.forEach(function(id) {
                 const campo = document.getElementById(id);
                 if (campo) {
@@ -1351,7 +1360,7 @@ _Pingo de Gente - LiveControl_`;
             if (pollingInterval) clearInterval(pollingInterval);
             pollingInterval = setInterval(async function() {
                 await verificarStatusPagamento();
-            }, 5000);
+            }, 3000);
             verificarStatusPagamento();
         }
 
@@ -1423,7 +1432,6 @@ _Pingo de Gente - LiveControl_`;
             const nome = document.getElementById('nome').value.trim();
             const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
             const whatsapp = document.getElementById('whatsapp').value.trim();
-            const email = document.getElementById('email').value.trim();
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
@@ -1438,7 +1446,7 @@ _Pingo de Gente - LiveControl_`;
                 return;
             }
 
-            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !email || !rua || !numero || !bairro || !cep) {
+            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !rua || !numero || !bairro || !cep) {
                 btn.innerHTML = '🔒 Preencha todos os dados obrigatórios';
                 btn.classList.add('btn-enviar-bloqueado');
                 btn.disabled = true;
@@ -1843,9 +1851,9 @@ _Pingo de Gente - LiveControl_`;
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // Enviar e-mail automaticamente para TODAS as solicitações
-                if (email) {
-                    await enviarEmailConfirmacao({
+                // Enviar e-mail somente se o campo foi preenchido (não bloqueante)
+                if (email && email.trim()) {
+                    enviarEmailConfirmacao({
                         email: email,
                         numeroSolicitacao: numeroSolicitacao,
                         nome: nome,
@@ -1862,41 +1870,41 @@ _Pingo de Gente - LiveControl_`;
                 }
 
                 // ============================================
-                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO (não bloqueante)
                 // ============================================
-                if (whatsapp) {
-                    try {
-                        await enviarConfirmacaoSolicitacao({
-                            nome: nome,
-                            numeroSolicitacao: numeroSolicitacao,
-                            bairro: bairro,
-                            cidade: cidadeForm,
-                            valorFrete: valorFreteAtual,
-                            whatsapp: whatsapp
-                        });
+                if (whatsapp && whatsapp.trim()) {
+                    // Fire-and-forget: envia WhatsApp sem esperar resposta
+                    enviarConfirmacaoSolicitacao({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp
+                    }).then(() => {
                         console.log('✅ WhatsApp de confirmação enviado!');
-                    } catch (errWhatsApp) {
-                        console.error('❌ Erro ao enviar WhatsApp de confirmação:', errWhatsApp);
-                    }
+                    }).catch((err) => {
+                        console.log('⚠️ WhatsApp de confirmação não enviado (não crítico):', err.message || err);
+                    });
                 }
 
                 // ============================================
-                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO (se pagamento confirmado)
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO (não bloqueante)
                 // ============================================
-                if (pagamentoConfirmado && whatsapp) {
-                    try {
-                        await enviarConfirmacaoPagamento({
-                            nome: nome,
-                            numeroSolicitacao: numeroSolicitacao,
-                            bairro: bairro,
-                            cidade: cidadeForm,
-                            valorFrete: valorFreteAtual,
-                            whatsapp: whatsapp
-                        });
+                if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
+                    // Fire-and-forget: envia WhatsApp sem esperar resposta
+                    enviarConfirmacaoPagamento({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp
+                    }).then(() => {
                         console.log('✅ WhatsApp de pagamento confirmado enviado!');
-                    } catch (errWhatsAppPago) {
-                        console.error('❌ Erro ao enviar WhatsApp de pagamento:', errWhatsAppPago);
-                    }
+                    }).catch((err) => {
+                        console.log('⚠️ WhatsApp de pagamento não enviado (não crítico):', err.message || err);
+                    });
                 }
 
                 if (modoAutomatico) {
