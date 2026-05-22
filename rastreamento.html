@@ -1962,8 +1962,18 @@ Qualquer dúvida, estou por aqui! 💕
                 const data = await response.json();
                 console.log('[EVOLUTION] Response:', JSON.stringify(data));
                 
-                // WORKAROUND: Evolution API v2.2.3 tem bug Prisma que retorna 400
+                // Tratar erro 400: número não existe no WhatsApp
                 if (!response.ok) {
+                    // Verificar se é erro de número não existente
+                    if (data.response && data.response.message && Array.isArray(data.response.message)) {
+                        const msg = data.response.message[0];
+                        if (msg && msg.exists === false) {
+                            console.error('[EVOLUTION] Número não existe no WhatsApp:', msg.number);
+                            return { sucesso: false, erro: 'NÚMERO_INVÁLIDO', dados: data, mensagem: 'Este número não está cadastrado no WhatsApp: ' + msg.number };
+                        }
+                    }
+                    
+                    // WORKAROUND: Erro Prisma (mensagem geralmente enviada mesmo com erro)
                     const isPrismaError = data.response &&
                                          data.response.message &&
                                          Array.isArray(data.response.message) &&
@@ -2051,6 +2061,8 @@ Qualquer dúvida, estou por aqui! 💕
                     } else {
                         showAlert('✅ Mensagem de rastreamento enviada via WhatsApp!', 'success');
                     }
+                } else if (resultado.erro === 'NÚMERO_INVÁLIDO') {
+                    showAlert('📱 ' + (resultado.mensagem || 'Este número não está cadastrado no WhatsApp'), 'warning');
                 } else if (resultado.erro === 'Timeout') {
                     showAlert('⏱️ A API do WhatsApp está demorando para responder. A mensagem pode ter sido enviada. Verifique o WhatsApp do cliente.', 'warning');
                 } else {
