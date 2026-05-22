@@ -171,11 +171,7 @@
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: 20px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes pulseWhatsApp { 
-            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 
-            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } 
-        }
+
         .modal-header { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { font-size: 24px; }
         .modal-close { background: none; border: none; color: white; font-size: 28px; cursor: pointer; transition: transform 0.3s; }
@@ -293,6 +289,7 @@
         .btn-instagram:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 </style>
     
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -490,48 +487,6 @@
                         <label for="observacoesRastreio">Observações <span class="campo-opcional">(opcional)</span></label>
                         <textarea id="observacoesRastreio" placeholder="Alguma observação sobre este rastreamento..."></textarea>
                     </div>
-                    <!-- SEÇÃO WHATSAPP - ENVIO VIA wa.me (100% GRATUITO) -->
-                    <div class="whatsapp-section" id="whatsappSection">
-                        <h4>📱 Enviar Notificação WhatsApp</h4>
-                        <div style="background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
-                            <strong style="color: #2E7D32;">✅ Modo Gratuito Ativo</strong>
-                            <p style="margin-top: 8px; color: #555; font-size: 0.9rem;">
-                                Clique no botão abaixo para abrir o WhatsApp do cliente com a mensagem já preenchida. 
-                                É só clicar <strong>"Enviar"</strong> no WhatsApp!
-                            </p>
-                        </div>
-                        <div class="form-group">
-                            <label>Número do Cliente (WhatsApp)</label>
-                            <input type="text" id="whatsappClienteModal" readonly style="background: #f8f9fa;">
-                        </div>
-                        <div class="form-group">
-                            <label>Mensagem que será enviada</label>
-                            <div class="whatsapp-preview" id="whatsappPreview" style="background: white; border: 2px solid #25D366; border-radius: 10px; padding: 15px; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; max-height: 250px; overflow-y: auto;">
-Olá! 👋
-
-Seu pedido foi enviado! 🚚✨
-
-📦 Nº do Pedido: {pedido}
-🔍 Código de Rastreio: {rastreio}
-🚛 Transportadora: {transportadora}
-
-🔗 Acompanhe sua entrega:
-{link}
-
-Qualquer dúvida, estou por aqui! 💕
-                            </div>
-                        </div>
-                        <div class="whatsapp-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button type="button" class="btn-whatsapp-enviar" onclick="abrirWhatsAppCliente()" id="btnAbrirWhatsApp" style="flex: 2; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                📱 Abrir WhatsApp com Mensagem
-                            </button>
-                            <button type="button" class="btn-whatsapp-copiar" onclick="copiarMensagemWhatsApp()" style="flex: 1; background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                📋 Copiar Texto
-                            </button>
-                        </div>
-                        <div class="whatsapp-status" id="whatsappStatus" style="margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-weight: 600; display: none;"></div>
-                    </div>
-
                     <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 20px;">💾 Salvar Rastreio</button>
                     <button type="button" class="btn-apagar-rastreio" id="btnApagarRastreio" onclick="apagarRastreio()" style="display: none;">🗑️ Apagar Rastreio</button>
                 </form>
@@ -901,8 +856,8 @@ async function aplicarFiltros() {
                     </td>
                     <td class="actions-cell" style="vertical-align: top; white-space: nowrap;">
                         <div style="display: flex; flex-direction: column; gap: 2px; align-items: stretch;">
-                            <button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Rastreio</button>
-                            <button class="btn-small btn-whatsapp" onclick="abrirModalRastreioWhatsApp('${s.id}')" ${!cliente.whatsapp ? 'disabled title="Cliente sem WhatsApp"' : ''}>📱 WhatsApp</button>
+                            ${s.codigo_rastreio ? `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Ver Rastreio</button>` : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
+                            <button class="btn-small btn-whatsapp" onclick="abrirModalRastreio('${s.id}')" ${!cliente.whatsapp ? 'disabled title="Cliente sem WhatsApp"' : ''}>📱 WhatsApp</button>
                             <button class="btn-small btn-instagram" onclick="abrirModalInstagram('${s.id}')" ${!cliente.instagram ? 'disabled title="Cliente sem Instagram"' : ''}>📸 Instagram</button>
                             <button class="btn-small btn-edit" onclick="editarSolicitacao('${s.id}')">✏️ Editar</button>
                             <button class="btn-small btn-delete" onclick="excluirSolicitacao('${s.id}')">🗑️ Del</button>
@@ -1615,36 +1570,7 @@ async function aplicarFiltros() {
                 document.getElementById('btnApagarRastreio').style.display = 'none';
             }
 
-            // ===== CONFIGURAR DADOS DO WHATSAPP =====
-            const cliente = sol.clientes_pg || {};
-            whatsAppClienteAtual = cliente;
-            pedidoAtualWhatsApp = sol.numero_solicitacao;
-
-            const whatsappInput = document.getElementById('whatsappClienteModal');
-            if (whatsappInput) {
-                whatsappInput.value = cliente.whatsapp 
-                    ? `${cliente.whatsapp} (${formatarWhatsApp(cliente.whatsapp)})` 
-                    : 'Cliente sem WhatsApp cadastrado';
-            }
-
-            // Inicializar preview WhatsApp
-            atualizarPreviewWhatsApp();
-
-            // Atualizar preview
-            setTimeout(() => atualizarPreviewWhatsApp(), 100);
-
-            // Configurar listeners
-            const codigoInput = document.getElementById('codigoRastreioModal');
-            const formaSelect = document.getElementById('formaEnvioModal');
-
-            // Remover listeners antigos primeiro
-            codigoInput.removeEventListener('input', atualizarPreviewWhatsApp);
-            formaSelect.removeEventListener('change', atualizarPreviewWhatsApp);
-
-            // Adicionar novos
-            codigoInput.addEventListener('input', atualizarPreviewWhatsApp);
-            formaSelect.addEventListener('change', atualizarPreviewWhatsApp);
-
+            // Preview de código de rastreio
             document.getElementById('codigoPreview').classList.remove('active');
             document.getElementById('modalRastreio').classList.add('active');
         }
@@ -1797,23 +1723,7 @@ async function aplicarFiltros() {
             }
         }
 
-        // Abrir modal de rastreio focado no WhatsApp (para reenviar rastreamento)
-        async function abrirModalRastreioWhatsApp(solicitacaoId) {
-            await abrirModalRastreio(solicitacaoId);
-
-            // Scroll para a seção WhatsApp
-            setTimeout(() => {
-                const whatsappSection = document.getElementById('whatsappSection');
-                if (whatsappSection) {
-                    whatsappSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // Destacar visualmente a seção
-                    whatsappSection.style.animation = 'pulseWhatsApp 1s ease 2';
-                    setTimeout(() => {
-                        whatsappSection.style.animation = '';
-                    }, 2000);
-                }
-            }, 300);
-        }
+        
 
         function fecharModalRastreio() {
             document.getElementById('modalRastreio').classList.remove('active');
@@ -2004,157 +1914,20 @@ Qualquer dúvida, estou por aqui! 💕
 
 
 // ============================================
-// FUNÇÕES WHATSAPP - ENVIO VIA wa.me (100% GRATUITO)
+// FUNÇÕES WHATSAPP - REMOVIDAS (serão usadas em outra rotina)
 // ============================================
-let whatsAppClienteAtual = null;
-let pedidoAtualWhatsApp = null;
-let dadosRastreioAtual = null;
 
-function gerarMensagemWhatsApp(dados) {
-    const pedido = dados.pedido;
-    const rastreio = dados.rastreio;
-    const transportadora = dados.transportadora;
-    const link = dados.link;
-    const cliente = dados.cliente;
 
-    let mensagem = "Oi " + (cliente || '') + "! 👋\n\n";
-    mensagem += "Seu pedido da Pingo de Gente foi enviado! 🚚✨\n\n";
-    mensagem += "📦 Nº do Pedido: " + (pedido || 'N/A') + "\n";
 
-    if (rastreio) {
-        mensagem += "🔍 Código de Rastreio: " + rastreio + "\n";
-        mensagem += "🚛 Transportadora: " + (transportadora || 'Correios') + "\n";
-        if (link) {
-            mensagem += "\n🔗 Acompanhe sua entrega:\n" + link + "\n";
-        }
-    }
 
-    mensagem += "\nQualquer dúvida, estou por aqui! 💕\n";
-    mensagem += "Obrigada pela preferência! 🥰";
 
-    return mensagem;
-}
 
-function atualizarPreviewWhatsApp() {
-    var codigoInput = document.getElementById('codigoRastreioModal');
-    var formaSelect = document.getElementById('formaEnvioModal');
 
-    if (!codigoInput || !formaSelect) return;
 
-    var codigo = codigoInput.value.trim();
-    var codigoLimpo = extrairCodigoRastreio(codigo);
-    var formaEnvio = formaSelect.value;
 
-    var urlRastreamento = gerarUrlRastreioWhatsApp(codigoLimpo, formaEnvio);
 
-    dadosRastreioAtual = {
-        pedido: pedidoAtualWhatsApp,
-        rastreio: codigoLimpo,
-        transportadora: formatarFormaEnvio(formaEnvio),
-        link: urlRastreamento,
-        cliente: whatsAppClienteAtual && whatsAppClienteAtual.nome ? whatsAppClienteAtual.nome.split(' ')[0] : ''
-    };
 
-    var preview = document.getElementById('whatsappPreview');
-    if (preview) {
-        preview.textContent = gerarMensagemWhatsApp(dadosRastreioAtual);
-    }
 
-    var btnAbrir = document.getElementById('btnAbrirWhatsApp');
-    if (btnAbrir) {
-        var habilitado = codigoLimpo && whatsAppClienteAtual && whatsAppClienteAtual.whatsapp;
-        btnAbrir.disabled = !habilitado;
-        btnAbrir.style.opacity = habilitado ? '1' : '0.5';
-        btnAbrir.style.cursor = habilitado ? 'pointer' : 'not-allowed';
-    }
-}
-
-function gerarUrlRastreioWhatsApp(codigo, formaEnvio) {
-    if (!codigo) return null;
-    var gerador = URLS_RASTREAMENTO[formaEnvio] || URLS_RASTREAMENTO['outro'];
-    return gerador ? gerador(codigo) : "https://www.google.com/search?q=rastreamento+" + codigo;
-}
-
-function abrirWhatsAppCliente() {
-    if (!whatsAppClienteAtual || !whatsAppClienteAtual.whatsapp) {
-        mostrarStatusWhatsApp("❌ Cliente sem WhatsApp cadastrado", "erro");
-        return;
-    }
-
-    if (!dadosRastreioAtual || !dadosRastreioAtual.rastreio) {
-        mostrarStatusWhatsApp("❌ Cadastre um código de rastreio primeiro", "erro");
-        return;
-    }
-
-    var mensagem = gerarMensagemWhatsApp(dadosRastreioAtual);
-    var numeroLimpo = whatsAppClienteAtual.whatsapp.replace(/\D/g, '');
-    var numeroComDDI = numeroLimpo.startsWith('55') ? numeroLimpo : '55' + numeroLimpo;
-    var mensagemEncoded = encodeURIComponent(mensagem);
-    var waLink = "https://wa.me/" + numeroComDDI + "?text=" + mensagemEncoded;
-
-    console.log("[WHATSAPP] Abrindo: " + waLink);
-
-    var novaAba = window.open(waLink, "_blank");
-
-    if (novaAba) {
-        mostrarStatusWhatsApp("✅ WhatsApp aberto! Clique em 'Enviar' para concluir.", "sucesso");
-    } else {
-        navigator.clipboard.writeText(waLink).then(function() {
-            mostrarStatusWhatsApp("📋 Link copiado! Cole no navegador", "info");
-        }).catch(function() {
-            mostrarStatusWhatsApp("⚠️ Permita popups e tente novamente", "erro");
-        });
-    }
-}
-
-function copiarMensagemWhatsApp() {
-    if (!dadosRastreioAtual) {
-        mostrarStatusWhatsApp("❌ Preencha os dados de rastreio primeiro", "erro");
-        return;
-    }
-
-    var mensagem = gerarMensagemWhatsApp(dadosRastreioAtual);
-
-    navigator.clipboard.writeText(mensagem).then(function() {
-        mostrarStatusWhatsApp("✅ Mensagem copiada! Cole no WhatsApp do cliente.", "sucesso");
-    }).catch(function() {
-        var textarea = document.createElement("textarea");
-        textarea.value = mensagem;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-        mostrarStatusWhatsApp("✅ Mensagem copiada! Cole no WhatsApp do cliente.", "sucesso");
-    });
-}
-
-function mostrarStatusWhatsApp(mensagem, tipo) {
-    var statusEl = document.getElementById("whatsappStatus");
-    if (statusEl) {
-        statusEl.style.display = "block";
-        statusEl.textContent = mensagem;
-
-        if (tipo === "sucesso") {
-            statusEl.style.background = "#E8F5E9";
-            statusEl.style.color = "#2E7D32";
-            statusEl.style.border = "2px solid #4CAF50";
-        } else if (tipo === "erro") {
-            statusEl.style.background = "#FFEBEE";
-            statusEl.style.color = "#C62828";
-            statusEl.style.border = "2px solid #EF5350";
-        } else if (tipo === "info") {
-            statusEl.style.background = "#E3F2FD";
-            statusEl.style.color = "#1565C0";
-            statusEl.style.border = "2px solid #2196F3";
-        }
-
-        if (tipo === "sucesso") {
-            setTimeout(function() {
-                statusEl.style.display = "none";
-            }, 5000);
-        }
-    }
-}
 
         // Logout usa auth.js - window.fazerLogout()
     </script>
