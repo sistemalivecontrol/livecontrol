@@ -457,6 +457,78 @@
         </div>
     </div>
 <script>
+        // ============================================
+        // EVOLUTION API - ENVIO DE WHATSAPP
+        // ============================================
+        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
+        const EVOLUTION_INSTANCE = 'pingodegente';
+
+        // Função para enviar mensagem WhatsApp
+        async function enviarWhatsApp(numero, texto) {
+            let numeroLimpo = numero.replace(/\D/g, '');
+            if (!numeroLimpo.startsWith('55')) {
+                numeroLimpo = '55' + numeroLimpo;
+            }
+            
+            try {
+                const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': EVOLUTION_API_KEY
+                    },
+                    body: JSON.stringify({
+                        number: numeroLimpo,
+                        text: texto
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('✅ WhatsApp enviado:', data);
+                return { sucesso: true, dados: data };
+            } catch (erro) {
+                console.error('❌ Erro ao enviar WhatsApp:', erro);
+                return { sucesso: false, erro: erro.message };
+            }
+        }
+
+        // Mensagem 1: Solicitação Recebida
+        async function enviarConfirmacaoSolicitacao(dados) {
+            const texto = `Olá *${dados.nome}*! 👋
+
+🚚 *Solicitação de Entrega Recebida!*
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
+💰 *Valor do Frete:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
+
+⏳ Agora é só aguardar o recebimento do número do rastreamento!
+
+_Pingo de Gente - LiveControl_`;
+            
+            return await enviarWhatsApp(dados.whatsapp, texto);
+        }
+
+        // Mensagem 2: Pagamento Confirmado
+        async function enviarConfirmacaoPagamento(dados) {
+            const texto = `Olá *${dados.nome}*! 🎉
+
+✅ *Pagamento Confirmado!*
+
+🚚 Sua entrega foi liberada e será processada em breve.
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
+💰 *Valor Pago:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
+
+Acompanhe o status pelo nosso sistema.
+
+_Pingo de Gente - LiveControl_`;
+            
+            return await enviarWhatsApp(dados.whatsapp, texto);
+        }
+
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
         const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
@@ -550,7 +622,6 @@
             const cidadeAtualValor = document.getElementById('cidade') ? document.getElementById('cidade').value : '';
 
             if (estado === 'SC') {
-                // Criar select com todas as cidades de SC
                 let optionsHtml = '<option value="">Selecione a cidade...</option>';
                 TODAS_CIDADES_SC.forEach(function(cidade) {
                     optionsHtml += '<option value="' + cidade + '">' + cidade + '</option>';
@@ -560,18 +631,15 @@
                     '<label class="required">Cidade</label>' +
                     '<select name="cidade" id="cidade" required>' + optionsHtml + '</select>';
             } else {
-                // Input de texto para outros estados
                 cidadeContainer.innerHTML = 
                     '<label class="required">Cidade</label>' +
                     '<input type="text" name="cidade" id="cidade" required placeholder="Digite sua cidade">';
             }
 
-            // Restaurar valor se existia
             if (cidadeAtualValor) {
                 const novoCampo = document.getElementById('cidade');
                 if (novoCampo) {
                     if (novoCampo.tagName === 'SELECT') {
-                        // Verificar se a cidade existe na lista
                         const optionExists = Array.from(novoCampo.options).some(opt => opt.value === cidadeAtualValor);
                         if (optionExists) novoCampo.value = cidadeAtualValor;
                     } else {
@@ -580,7 +648,6 @@
                 }
             }
 
-            // Adicionar event listener ao novo campo
             const novoCampoCidade = document.getElementById('cidade');
             if (novoCampoCidade) {
                 if (novoCampoCidade.tagName === 'SELECT') {
@@ -1069,7 +1136,6 @@
                 }
             });
 
-            // Estado - atualiza campo cidade e calcula frete
             document.getElementById('estado').addEventListener('change', function() {
                 atualizarCampoCidade(this.value);
                 calcularFrete();
@@ -1793,6 +1859,44 @@
                         cep: cep,
                         observacoes: observacoes
                     });
+                }
+
+                // ============================================
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO
+                // ============================================
+                if (whatsapp) {
+                    try {
+                        await enviarConfirmacaoSolicitacao({
+                            nome: nome,
+                            numeroSolicitacao: numeroSolicitacao,
+                            bairro: bairro,
+                            cidade: cidadeForm,
+                            valorFrete: valorFreteAtual,
+                            whatsapp: whatsapp
+                        });
+                        console.log('✅ WhatsApp de confirmação enviado!');
+                    } catch (errWhatsApp) {
+                        console.error('❌ Erro ao enviar WhatsApp de confirmação:', errWhatsApp);
+                    }
+                }
+
+                // ============================================
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO (se pagamento confirmado)
+                // ============================================
+                if (pagamentoConfirmado && whatsapp) {
+                    try {
+                        await enviarConfirmacaoPagamento({
+                            nome: nome,
+                            numeroSolicitacao: numeroSolicitacao,
+                            bairro: bairro,
+                            cidade: cidadeForm,
+                            valorFrete: valorFreteAtual,
+                            whatsapp: whatsapp
+                        });
+                        console.log('✅ WhatsApp de pagamento confirmado enviado!');
+                    } catch (errWhatsAppPago) {
+                        console.error('❌ Erro ao enviar WhatsApp de pagamento:', errWhatsAppPago);
+                    }
                 }
 
                 if (modoAutomatico) {
