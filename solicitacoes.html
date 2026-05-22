@@ -183,6 +183,7 @@
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -245,11 +246,11 @@
                     <label class="required">WhatsApp</label>
                     <input type="tel" name="whatsapp" id="whatsapp" required placeholder="(48) 99999-9999">
                 </div>
-                <!-- 4. E-mail (OBRIGATÓRIO) -->
+                <!-- 4. E-mail -->
                 <div class="form-group">
-                    <label class="required">E-mail</label>
-                    <input type="email" name="email" id="email" required placeholder="seu.email@exemplo.com">
-                    <p class="hint">💡 Uma cópia da solicitação será enviada automaticamente para este e-mail</p>
+                    <label>E-mail</label>
+                    <input type="email" name="email" id="email" placeholder="seu.email@exemplo.com">
+                    <p class="hint">💡 Se informar o e-mail, uma cópia da solicitação será enviada automaticamente</p>
                 </div>
                 <!-- 5. Instagram -->
                 <div class="form-group">
@@ -503,7 +504,7 @@
 📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
 💰 *Valor do Frete:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
 
-⏳ Agora é só aguardar o número do rastreamento para acompanhar sua entrega!
+⏳ Agora é só aguardar o recebimento do número do rastreamento!
 
 _Pingo de Gente - LiveControl_`;
             
@@ -749,7 +750,6 @@ _Pingo de Gente - LiveControl_`;
             const nome = document.getElementById('nome').value.trim();
             const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
             const whatsapp = document.getElementById('whatsapp').value.trim();
-            const email = document.getElementById('email').value.trim();
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
@@ -757,7 +757,7 @@ _Pingo de Gente - LiveControl_`;
             const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
 
-            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && email && rua && numero && bairro && cidade && estado && cep;
+            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && rua && numero && bairro && cidade && estado && cep;
 
             const btnGerarPix = document.getElementById('btnGerarPix');
             const avisoCampos = document.getElementById('avisoCamposObrigatorios');
@@ -1154,7 +1154,7 @@ _Pingo de Gente - LiveControl_`;
                 if (e.target === this) fecharConfiguracoes();
             });
 
-            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'email', 'rua', 'numero', 'bairro', 'cepEndereco', 'estado'];
+            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'rua', 'numero', 'bairro', 'cepEndereco', 'estado'];
             camposObrigatorios.forEach(function(id) {
                 const campo = document.getElementById(id);
                 if (campo) {
@@ -1423,7 +1423,6 @@ _Pingo de Gente - LiveControl_`;
             const nome = document.getElementById('nome').value.trim();
             const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
             const whatsapp = document.getElementById('whatsapp').value.trim();
-            const email = document.getElementById('email').value.trim();
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
@@ -1438,7 +1437,7 @@ _Pingo de Gente - LiveControl_`;
                 return;
             }
 
-            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !email || !rua || !numero || !bairro || !cep) {
+            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !rua || !numero || !bairro || !cep) {
                 btn.innerHTML = '🔒 Preencha todos os dados obrigatórios';
                 btn.classList.add('btn-enviar-bloqueado');
                 btn.disabled = true;
@@ -1843,8 +1842,8 @@ _Pingo de Gente - LiveControl_`;
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // Enviar e-mail automaticamente para TODAS as solicitações
-                if (email) {
+                // Enviar e-mail somente se o campo foi preenchido
+                if (email && email.trim()) {
                     await enviarEmailConfirmacao({
                         email: email,
                         numeroSolicitacao: numeroSolicitacao,
@@ -1864,7 +1863,7 @@ _Pingo de Gente - LiveControl_`;
                 // ============================================
                 // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO
                 // ============================================
-                if (whatsapp) {
+                if (whatsapp && whatsapp.trim()) {
                     try {
                         await enviarConfirmacaoSolicitacao({
                             nome: nome,
@@ -1883,7 +1882,7 @@ _Pingo de Gente - LiveControl_`;
                 // ============================================
                 // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO (se pagamento confirmado)
                 // ============================================
-                if (pagamentoConfirmado && whatsapp) {
+                if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
                     try {
                         await enviarConfirmacaoPagamento({
                             nome: nome,
