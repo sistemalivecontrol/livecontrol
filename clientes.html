@@ -7,10 +7,10 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
+
     <!-- VERSION.JS - SEMPRE PRIMEIRO! -->
     <script src="./js/version.js"></script>
-    
+
     <title>Gerenciamento de Clientes - Pingo de Gente</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="./js/auth.js"></script>
@@ -469,6 +469,7 @@
     </style>
 
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -656,20 +657,33 @@ async function carregarEstatisticas() {
     }
 }
 
+// ============================================
+// 🔧 FUNÇÃO BUSCAR CLIENTES - CORRIGIDA PARA CPF COM MÁSCARA
+// ============================================
 async function buscarClientes() {
     const nome = document.getElementById('buscaNome').value.trim();
     const cidade = document.getElementById('buscaCidade').value.trim();
     const regiao = document.getElementById('buscaRegiao').value;
     try {
         let query = supabaseClient.from('clientes_pg').select(`*,enderecos_pg (*)`).eq('cliente_id', clienteSistemaId).order('nome');
+
         if (nome) {
+            // Remove a máscara do CPF para buscar no banco (que armazena sem máscara)
             const cpfLimpo = nome.replace(/\D/g, '');
-            if (cpfLimpo.length > 0) {
-                query = query.or(`nome.ilike.%${nome}%,cpf.ilike.%${nome}%`);
+
+            // Verifica se o termo digitado parece um CPF (apenas números, 11 dígitos)
+            const pareceCPF = /^\d{11}$/.test(cpfLimpo);
+
+            if (pareceCPF) {
+                // Busca pelo CPF limpo (sem máscara) no banco
+                query = query.ilike('cpf', `%${cpfLimpo}%`);
             } else {
-                query = query.ilike('nome', `%${nome}%`);
+                // Busca por nome OU CPF parcial (com e sem máscara)
+                // Tenta buscar tanto com o termo original quanto limpo
+                query = query.or(`nome.ilike.%${nome}%,cpf.ilike.%${nome}%,cpf.ilike.%${cpfLimpo}%`);
             }
         }
+
         const { data: clientes, error } = await query;
         if (error) throw error;
         let clientesFiltrados = clientes || [];
