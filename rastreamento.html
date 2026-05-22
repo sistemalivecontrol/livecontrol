@@ -759,33 +759,34 @@ function textoContemBusca(texto, busca) {
 }
 
 
-function aplicarFiltros() {
+async function aplicarFiltros() {
             const numero = document.getElementById('filtroNumero').value.trim();
             const status = document.getElementById('filtroStatus').value;
             const dataInicio = document.getElementById('filtroDataInicio').value;
             const dataFim = document.getElementById('filtroDataFim').value;
             const nomeCliente = document.getElementById('filtroNomeCliente').value.trim();
 
-            // Se tem filtro por nome, usamos abordagem diferente
-            // porque o Supabase não faz ilike com unaccent em relacionamentos
-            let query = supabaseClient.from('solicitacoes_pg')
-                .select(`*, clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)`)
-                .eq('cliente_id', clienteAtual);
+            try {
+                // Se tem filtro por nome, usamos abordagem diferente
+                // porque o Supabase não faz ilike com unaccent em relacionamentos
+                let query = supabaseClient.from('solicitacoes_pg')
+                    .select(`*, clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)`)
+                    .eq('cliente_id', clienteAtual);
 
-            if (numero) query = query.ilike('numero_solicitacao', `%${numero}%`);
-            if (status) query = query.eq('status', status);
+                if (numero) query = query.ilike('numero_solicitacao', `%${numero}%`);
+                if (status) query = query.eq('status', status);
 
-            // NÃO aplicamos filtro de nome no Supabase - faremos no cliente
-            // para ter controle total de acentos e case
+                // NÃO aplicamos filtro de nome no Supabase - faremos no cliente
+                // para ter controle total de acentos e case
 
-            var dataHoraInicio = getDataHoraCompleta('inicio');
-            var dataHoraFim = getDataHoraCompleta('fim');
+                var dataHoraInicio = getDataHoraCompleta('inicio');
+                var dataHoraFim = getDataHoraCompleta('fim');
 
-            if (dataHoraInicio) query = query.gte('criado_em', dataHoraInicio);
-            if (dataHoraFim) query = query.lte('criado_em', dataHoraFim);
-            query = query.order('criado_em', { ascending: false });
+                if (dataHoraInicio) query = query.gte('criado_em', dataHoraInicio);
+                if (dataHoraFim) query = query.lte('criado_em', dataHoraFim);
+                query = query.order('criado_em', { ascending: false });
 
-            query.then(({ data, error }) => {
+                const { data, error } = await query;
                 if (error) throw error;
 
                 let resultado = data || [];
@@ -804,9 +805,7 @@ function aplicarFiltros() {
                 atualizarTabela();
                 atualizarEstatisticas();
                 showAlert(`${solicitacoes.length} solicitação(ões) encontrada(s)`, 'success');
-            }).catch(error => {
-                showAlert('Erro: ' + error.message, 'error');
-            });
+            } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
         }function carregarEnderecosCliente(clienteId) {
             const enderecoSelect = document.getElementById('enderecoSelect');
             enderecoSelect.innerHTML = '<option value="">Selecione...</option>';
@@ -1015,15 +1014,14 @@ function aplicarFiltros() {
             document.getElementById('modalSolicitacao').classList.add('active');
         }
 
-        function editarSolicitacao(id) {
+        async function editarSolicitacao(id) {
             const s = solicitacoes.find(x => x.id === id);
             if (!s) return;
             document.getElementById('modalTitle').textContent = 'Editar Solicitação';
             document.getElementById('solicitacaoId').value = s.id;
             document.getElementById('clienteSelect').value = s.cliente_pg_id || '';
-            carregarEnderecosCliente(s.cliente_pg_id).then(() => {
-                document.getElementById('enderecoSelect').value = s.endereco_id || '';
-            });
+            await carregarEnderecosCliente(s.cliente_pg_id);
+            document.getElementById('enderecoSelect').value = s.endereco_id || '';
             document.getElementById('dataCorte').value = s.data_corte_semanal ? new Date(s.data_corte_semanal).toISOString().slice(0,16) : '';
             document.getElementById('semanaEnvio').value = s.semana_envio || '';
             document.getElementById('dataEnvio').value = s.data_envio || '';
@@ -1050,7 +1048,7 @@ function aplicarFiltros() {
         // ============================================
         // SALVAR
         // ============================================
-        function salvarSolicitacao() {
+        async function salvarSolicitacao() {
             const id = document.getElementById('solicitacaoId').value;
             const clientePgId = document.getElementById('clienteSelect').value;
             const enderecoId = document.getElementById('enderecoSelect').value;
@@ -1077,23 +1075,21 @@ function aplicarFiltros() {
                 atualizado_em: new Date().toISOString()
             };
 
-            (async () => {
-                try {
-                    if (id) {
-                        const { error } = await supabaseClient.from('solicitacoes_pg').update(dados).eq('id', id);
-                        if (error) throw error;
-                        showAlert('Atualizado!', 'success');
-                    } else {
-                        dados.criado_em = new Date().toISOString();
-                        dados.numero_solicitacao = `SOL-${new Date().getFullYear()}-${Math.floor(Math.random()*9999).toString().padStart(4,'0')}`;
-                        const { error } = await supabaseClient.from('solicitacoes_pg').insert([dados]);
-                        if (error) throw error;
-                        showAlert('Criado!', 'success');
-                    }
-                    fecharModal();
-                    carregarSolicitacoes();
-                } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
-            })();
+            try {
+                if (id) {
+                    const { error } = await supabaseClient.from('solicitacoes_pg').update(dados).eq('id', id);
+                    if (error) throw error;
+                    showAlert('Atualizado!', 'success');
+                } else {
+                    dados.criado_em = new Date().toISOString();
+                    dados.numero_solicitacao = `SOL-${new Date().getFullYear()}-${Math.floor(Math.random()*9999).toString().padStart(4,'0')}`;
+                    const { error } = await supabaseClient.from('solicitacoes_pg').insert([dados]);
+                    if (error) throw error;
+                    showAlert('Criado!', 'success');
+                }
+                fecharModal();
+                carregarSolicitacoes();
+            } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
         }
 
         // ============================================
@@ -1140,40 +1136,38 @@ function aplicarFiltros() {
         // ============================================
         // EXCLUIR - COM APAGUE DE RASTREAMENTOS PRIMEIRO
         // ============================================
-        function excluirSolicitacao(id) {
-            if (!confirm('Tem certeza que deseja excluir esta solicitação?\n\nOs rastreamentos vinculados também serão removidos.')) return;
+        async function excluirSolicitacao(id) {
+            if (!confirm('Tem certeza que deseja excluir esta solicitação?
 
-            (async () => {
-                try {
-                    // 1. Apagar rastreamentos vinculados primeiro (evita erro 409 Conflict)
-                    const { error: erroRastreio } = await supabaseClient
-                        .from('rastreamentos_pg')
-                        .delete()
-                        .eq('solicitacao_id', id);
+Os rastreamentos vinculados também serão removidos.')) return;
+            try {
+                // 1. Apagar rastreamentos vinculados primeiro (evita erro 409 Conflict)
+                const { error: erroRastreio } = await supabaseClient
+                    .from('rastreamentos_pg')
+                    .delete()
+                    .eq('solicitacao_id', id);
 
-                    if (erroRastreio) {
-                        console.warn('Aviso ao apagar rastreamentos:', erroRastreio.message);
-                    }
-
-                    // 2. Apagar a solicitação
-                    const { error } = await supabaseClient.from('solicitacoes_pg').delete().eq('id', id);
-                    if (error) throw error;
-
-                    showAlert('✅ Solicitação excluída com sucesso!', 'success');
-                    carregarSolicitacoes();
-                } catch (error) { 
-                    showAlert('❌ Erro ao excluir: ' + error.message, 'error'); 
+                if (erroRastreio) {
+                    console.warn('Aviso ao apagar rastreamentos:', erroRastreio.message);
                 }
-            })();
+
+                // 2. Apagar a solicitação
+                const { error } = await supabaseClient.from('solicitacoes_pg').delete().eq('id', id);
+                if (error) throw error;
+
+                showAlert('✅ Solicitação excluída com sucesso!', 'success');
+                carregarSolicitacoes();
+            } catch (error) { 
+                showAlert('❌ Erro ao excluir: ' + error.message, 'error'); 
+            }
         }
 
         // ============================================
         // PDF - LAYOUT IGUAL AO ANTIGO (PORTRAIT)
         // ============================================
-        function gerarPDF() {
+        async function gerarPDF() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
 
-            (async () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
 
@@ -1297,15 +1291,12 @@ function aplicarFiltros() {
             return isNaN(d.getTime()) ? data : d.toLocaleDateString('pt-BR');
         }
 
-                    })();
-
         // ============================================
         // ETIQUETAS PDF (4 POR PAGINA A4)
         // ============================================
-        function gerarEtiquetas() {
+        async function gerarEtiquetas() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
 
-            (async () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('portrait', 'mm', 'a4');
 
@@ -1425,8 +1416,6 @@ function aplicarFiltros() {
             const novaAba = window.open(pdfBlobUrl, '_blank');
             if (!novaAba) alert('❌ Permita popups para este site.');
         }
-
-                    })();
 
         // ============================================
         // ETIQUETAS MODAL (COPIAR CAMPOS)
@@ -1569,14 +1558,14 @@ function aplicarFiltros() {
             }
         }
 
-        function abrirModalRastreio(solicitacaoId) {
+        async function abrirModalRastreio(solicitacaoId) {
             const sol = solicitacoes.find(s => s.id === solicitacaoId);
             if (!sol) return;
 
             document.getElementById('rastreioSolicitacaoId').value = solicitacaoId;
             document.getElementById('rastreioId').value = sol.rastreamento_id || '';
 
-            mostrarHistoricoRastreamentos(solicitacaoId).then(() => {
+            await mostrarHistoricoRastreamentos(solicitacaoId);
 
             if (sol.rastreamento_id) {
                 const rastRecente = rastreamentosCache[solicitacaoId]?.[0];
@@ -1600,7 +1589,6 @@ function aplicarFiltros() {
             // Preview de código de rastreio
             document.getElementById('codigoPreview').classList.remove('active');
             document.getElementById('modalRastreio').classList.add('active');
-            });
         }
 
         async function mostrarHistoricoRastreamentos(solicitacaoId) {
@@ -1702,7 +1690,7 @@ function aplicarFiltros() {
             }
         }
 
-        function apagarRastreio() {
+        async function apagarRastreio() {
             const rastreioId = document.getElementById('rastreioId').value;
             const solicitacaoId = document.getElementById('rastreioSolicitacaoId').value;
 
@@ -1714,7 +1702,6 @@ function aplicarFiltros() {
             if (!confirm('🗑️ Tem certeza que deseja APAGAR este rastreamento?\n\nEsta ação não pode ser desfeita!')) return;
             if (!confirm('⚠️ CONFIRMAÇÃO FINAL:\n\nO rastreamento será permanentemente removido. Deseja continuar?')) return;
 
-            (async () => {
             try {
                 const { error } = await supabaseClient
                     .from('rastreamentos_pg')
@@ -1750,8 +1737,7 @@ function aplicarFiltros() {
                 console.error('Erro ao apagar rastreio:', e);
                 showAlert('❌ Erro ao apagar rastreamento: ' + e.message, 'error');
             }
-        
-            })();}
+        }
 
         
 
