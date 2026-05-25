@@ -154,6 +154,7 @@
         .btn-gerar-relatorio:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3); }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -356,7 +357,7 @@
                 const { data, error } = await supabase
                     .from('vendas_pg')
                     .select('*')
-                    .eq('cliente_id', clienteId)
+                    .or(`cliente_id.eq.${clienteId},cliente_id.is.null`)
                     .order('data_venda', { ascending: false });
 
                 if (error) throw error;
