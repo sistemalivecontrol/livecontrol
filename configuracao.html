@@ -102,9 +102,14 @@
 <body>
     <div class="container">
         <!-- HEADER -->
-        <div class="header">
-            <h1>&#9881; <span>Configuracoes</span> do Sistema</h1>
-            <button class="btn-voltar" onclick="location.href='dashboard.html'">&#8592; Voltar ao Dashboard</button>
+        <div class="header" style="position:relative;">
+            <div class="header-left" style="display:flex;align-items:center;gap:12px;">
+                <h1>&#9881; <span>Configuracoes</span> do Sistema</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="user-info" id="userInfo" style="color:#fff;font-size:14px;">&#128100; <span id="userEmail">Carregando...</span></div>
+                <button class="btn-voltar" onclick="location.href='dashboard.html'">&#8592; Voltar</button>
+            </div>
         </div>
 
         <!-- ABAS -->
@@ -468,5 +473,18 @@
         carregarConfiguracoes();
     </script>
     <script src="navmenu.js"></script>
+    <script>
+        // Carregar nome do usuario logado
+        (function(){
+            try {
+                var sessao = localStorage.getItem('usuarioLogado');
+                if (sessao) {
+                    var dados = JSON.parse(sessao);
+                    var nome = dados.nome || dados.email || 'Usuario';
+                    document.getElementById('userEmail').textContent = nome;
+                }
+            } catch(e) {}
+        })();
+    </script>
 </body>
 </html>
