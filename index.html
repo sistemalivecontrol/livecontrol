@@ -1,535 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
+  <head>
     <script>if(location.pathname.endsWith("index.html")){history.replaceState(null,"",location.pathname.replace(/index\.html$/,"")+location.search+location.hash)}</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VendaLive - Sistema de Gestao para Lives. Gerencie pedidos, clientes, cobrancas e entregas em tempo real.">
-    <meta name="theme-color" content="#0a1628">
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-    <title>VendaLive - Sistema de Gestao para Lives</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="VendaLive - Sistema de Gestão para Lives. Gerencie pedidos, clientes, cobranças e entregas em tempo real." />
+    <meta name="theme-color" content="#0a1628" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <title>VendaLive - Sistema de Gestão para Lives</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- ===== CORREÇÃO LOGO VENDALIVE - TUDO BRANCO ===== -->
     <style>
-        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-        html{scroll-behavior:smooth}
-        body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#0a1628;overflow-x:hidden}
-        a{text-decoration:none;color:inherit}
-        button{cursor:pointer;font-family:inherit;border:none;background:none}
-        img{max-width:100%;display:block}
-        .container{max-width:1200px;margin:0 auto;padding:0 24px}
+      /* RESET - força visibilidade em todos os elementos do header */
+      header *, nav *, .header *, .nav *, [class*="header"] *, [class*="nav"] * {
+        overflow: visible !important;
+        text-overflow: clip !important;
+      }
 
-        /* NAV */
-        .nav{position:fixed;top:0;left:0;right:0;z-index:100;transition:all .3s}
-        .nav.scrolled{background:rgba(10,22,40,.95);backdrop-filter:blur(20px);box-shadow:0 2px 20px rgba(0,0,0,.2)}
-        .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
-        .logo{display:flex;align-items:center;gap:10px}
-        .logo svg{width:36px;height:36px}
-        .logo-text{font-size:20px;font-weight:800;color:#fff}
-        .logo-text span{color:#5b9bd5}
-        .nav-links{display:flex;align-items:center;gap:32px}
-        .nav-links a{color:rgba(255,255,255,.8);font-size:14px;font-weight:500;transition:color .2s}
-        .nav-links a:hover{color:#fff}
-        .btn-primary{background:#0B193F;color:#fff;padding:10px 24px;border-radius:100px;font-size:14px;font-weight:600;transition:all .3s;display:inline-flex;align-items:center;gap:8px}
-        .btn-primary:hover{background:#152B5C;transform:translateY(-1px);box-shadow:0 8px 25px rgba(0,0,0,.3)}
-        .btn-secondary{background:rgba(255,255,255,.1);color:#fff;padding:10px 24px;border-radius:100px;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,.2);transition:all .3s}
-        .btn-secondary:hover{background:rgba(255,255,255,.2)}
-        .btn-large{padding:14px 32px;font-size:16px}
-        .mobile-toggle{display:none;background:none;border:none;color:#fff;font-size:24px}
+      header, nav, .header, .nav, [class*="header"], [class*="nav"] {
+        overflow: visible !important;
+      }
 
-        /* HERO */
-        .hero{min-height:100vh;display:flex;align-items:center;background:#0a1628;position:relative;overflow:hidden;padding:120px 0 80px}
-        .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(91,155,213,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(11,25,63,.8) 0%,transparent 50%)}
-        .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;z-index:2}
-        .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:100px;color:rgba(255,255,255,.9);font-size:13px;font-weight:500;margin-bottom:24px}
-        .hero-badge .dot{width:8px;height:8px;background:#22c55e;border-radius:50%;position:relative}
-        .hero-badge .dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:#22c55e;opacity:.5;animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite}
-        @keyframes ping{0%{transform:scale(1);opacity:.5}75%,100%{transform:scale(2);opacity:0}}
-        .hero h1{font-size:52px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-1.5px;margin-bottom:20px}
-        .hero h1 span{color:#5b9bd5}
-        .hero p{font-size:18px;color:rgba(255,255,255,.65);line-height:1.7;max-width:520px;margin-bottom:32px}
-        .hero-buttons{display:flex;flex-wrap:wrap;gap:16px}
-        .hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:40px}
-        .hero-stat{text-align:center;padding:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px}
-        .hero-stat .num{font-size:28px;font-weight:800;color:#5b9bd5}
-        .hero-stat .label{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
-        .hero-visual{position:relative;display:flex;align-items:center;justify-content:center}
-        .hero-visual .mockup{width:100%;max-width:500px;border-radius:16px;box-shadow:0 40px 80px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1)}
+      /* Logo - TUDO BRANCO */
+      .logo, .brand, .nav-logo, .header-logo, .site-logo, .brand-name,
+      [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
+      [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0px !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        min-width: max-content !important;
+        max-width: none !important;
+        width: auto !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
+        text-overflow: clip !important;
+        color: #ffffff !important;
+      }
 
-        /* SECTIONS */
-        .section{padding:100px 0}
-        .section-title{text-align:center;margin-bottom:60px}
-        .section-title .tag{display:inline-block;padding:6px 16px;background:rgba(11,25,63,.08);border-radius:100px;font-size:13px;font-weight:600;color:#0B193F;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
-        .section-title h2{font-size:40px;font-weight:800;letter-spacing:-1px}
-        .section-title p{color:#64748b;font-size:18px;margin-top:12px;max-width:600px;margin-left:auto;margin-right:auto}
+      /* TODOS os spans dentro do logo = BRANCO */
+      .logo > *, .brand > *, .nav-logo > *, .header-logo > *,
+      .site-logo > *, .brand-name > *,
+      [class*="logo"] > *, [class*="brand"] > * {
+        display: inline !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        flex-shrink: 0 !important;
+        color: #ffffff !important;
+      }
 
-        /* FEATURES */
-        .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-        .feature-card{padding:32px;border-radius:20px;background:#fff;border:1px solid #e2e8f0;transition:all .3s}
-        .feature-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.1);border-color:#0B193F}
-        .feature-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#0B193F,#1a3a6e);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px}
-        .feature-card h3{font-size:18px;font-weight:700;margin-bottom:10px}
-        .feature-card p{font-size:14px;color:#64748b;line-height:1.6}
+      /* SVG dentro do logo */
+      .logo svg, .brand svg, .nav-logo svg, .header-logo svg,
+      .site-logo svg, .brand-name svg,
+      [class*="logo"] svg, [class*="brand"] svg {
+        flex-shrink: 0 !important;
+        min-width: auto !important;
+      }
 
-        /* STEPS */
-        .steps{background:#f8fafc}
-        .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;position:relative}
-        .step{text-align:center;position:relative}
-        .step-num{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#0B193F,#1a3a6e);color:#fff;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(11,25,63,.3)}
-        .step h3{font-size:20px;font-weight:700;margin-bottom:10px}
-        .step p{font-size:14px;color:#64748b;line-height:1.6}
-        .step-connector{position:absolute;top:32px;left:33%;right:33%;height:2px;background:linear-gradient(90deg,#0B193F20,#0B193F,#0B193F20)}
+      /* TEXTO "Venda" - BRANCO */
+      .logo span:first-child, .brand span:first-child,
+      .nav-logo span:first-child, .header-logo span:first-child,
+      .logo > span:first-of-type, .brand > span:first-of-type,
+      .nav-logo > span:first-of-type, .header-logo > span:first-of-type {
+        color: #ffffff !important;
+      }
 
-        /* PLANS */
-        .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:800px;margin:0 auto}
-        .plan-card{padding:40px;border-radius:24px;background:#fff;border:2px solid #e2e8f0;position:relative}
-        .plan-card.popular{border-color:#0B193F;box-shadow:0 20px 60px rgba(11,25,63,.15)}
-        .plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);padding:6px 20px;background:#0B193F;color:#fff;font-size:11px;font-weight:700;border-radius:100px;text-transform:uppercase;letter-spacing:1px}
-        .plan-name{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#0B193F;margin-bottom:16px}
-        .plan-price{display:flex;align-items:baseline;gap:4px;margin-bottom:24px}
-        .plan-price .currency{font-size:20px;color:#94a3b8}
-        .plan-price .amount{font-size:56px;font-weight:800;line-height:1}
-        .plan-price .period{font-size:16px;color:#94a3b8}
-        .plan-features{list-style:none;margin-bottom:32px}
-        .plan-features li{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:15px;color:#334155;border-bottom:1px solid #f1f5f9}
-        .plan-features li:last-child{border-bottom:none}
-        .plan-features .check{width:22px;height:22px;border-radius:50%;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+      /* TEXTO "Live" - BRANCO TAMBÉM */
+      .logo span:last-child, .brand span:last-child,
+      .nav-logo span:last-child, .header-logo span:last-child,
+      .logo > span:last-of-type, .brand > span:last-of-type,
+      .nav-logo > span:last-of-type, .header-logo > span:last-of-type,
+      .logo span:nth-child(2), .brand span:nth-child(2),
+      .nav-logo span:nth-child(2), .header-logo span:nth-child(2),
+      .logo .live, .brand .live, .nav-logo .live, .header-logo .live,
+      .logo .highlight, .brand .highlight, .nav-logo .highlight, .header-logo .highlight,
+      .logo [class*="live"], .brand [class*="live"],
+      .nav-logo [class*="live"], .header-logo [class*="live"],
+      .logo [class*="Live"], .brand [class*="Live"],
+      .nav-logo [class*="Live"], .header-logo [class*="Live"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+      }
 
-        /* FAQ */
-        .faq{background:#f8fafc}
-        .faq-list{max-width:700px;margin:0 auto}
-        .faq-item{background:#fff;border-radius:16px;margin-bottom:12px;overflow:hidden;border:1px solid #e2e8f0}
-        .faq-question{padding:20px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;font-size:15px;transition:background .2s}
-        .faq-question:hover{background:#f8fafc}
-        .faq-question .icon{font-size:20px;color:#94a3b8;transition:transform .3s}
-        .faq-item.active .faq-question .icon{transform:rotate(180deg)}
-        .faq-answer{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;padding:0 24px}
-        .faq-item.active .faq-answer{max-height:200px;padding:0 24px 20px}
-        .faq-answer p{color:#64748b;font-size:14px;line-height:1.7}
+      /* Se o logo for um SVG com texto - TUDO BRANCO */
+      .logo text, .brand text, .nav-logo text, .header-logo text,
+      .site-logo text, .brand-name text,
+      [class*="logo"] text, [class*="brand"] text {
+        fill: #ffffff !important;
+      }
 
-        /* STATS BAR */
-        .stats-bar{background:#0a1628;padding:60px 0;position:relative;overflow:hidden}
-        .stats-bar::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(91,155,213,.1) 0%,transparent 60%)}
-        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;position:relative;z-index:2}
-        .stat-item{text-align:center}
-        .stat-item .num{font-size:36px;font-weight:800;color:#5b9bd5}
-        .stat-item .label{font-size:13px;color:rgba(255,255,255,.5);margin-top:8px;text-transform:uppercase;letter-spacing:1px}
+      .logo text:last-child, .brand text:last-child,
+      .nav-logo text:last-child, .header-logo text:last-child,
+      .logo text:nth-child(2), .brand text:nth-child(2),
+      .nav-logo text:nth-child(2), .header-logo text:nth-child(2) {
+        fill: #ffffff !important;
+        font-weight: 700 !important;
+      }
 
-        /* CTA */
-        .cta{background:linear-gradient(135deg,#0B193F,#1a3a6e);padding:100px 0;text-align:center;position:relative;overflow:hidden}
-        .cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(91,155,213,.15) 0%,transparent 50%)}
-        .cta h2{font-size:40px;font-weight:800;color:#fff;margin-bottom:16px;position:relative}
-        .cta p{font-size:18px;color:rgba(255,255,255,.6);margin-bottom:32px;position:relative}
 
-        /* FOOTER */
-        .footer{background:#070e1a;padding:60px 0 30px;border-top:1px solid rgba(255,255,255,.05)}
-        .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
-        .footer-brand .logo-text{color:#fff;margin-bottom:12px}
-        .footer-brand p{font-size:14px;color:rgba(255,255,255,.4);line-height:1.6;max-width:280px}
-        .footer-col h4{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.5);margin-bottom:16px}
-        .footer-col a{display:block;padding:6px 0;font-size:14px;color:rgba(255,255,255,.4);transition:color .2s}
-        .footer-col a:hover{color:rgba(255,255,255,.8)}
-        .footer-bottom{text-align:center;padding-top:24px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.3)}
+      /* ÍCONE SVG do logo - forçar branco */
+      .logo svg *, .brand svg *, .nav-logo svg *, .header-logo svg *,
+      .site-logo svg *, .brand-name svg *,
+      [class*="logo"] svg *, [class*="brand"] svg * {
+        stroke: #ffffff !important;
+        fill: #ffffff !important;
+      }
+      .logo svg path[fill], .brand svg path[fill],
+      .nav-logo svg path[fill], .header-logo svg path[fill] {
+        fill: #ffffff !important;
+      }
+      .logo svg rect, .brand svg rect,
+      .nav-logo svg rect, .header-logo svg rect {
+        stroke: #ffffff !important;
+      }
+      .logo svg circle, .brand svg circle,
+      .nav-logo svg circle, .header-logo svg circle {
+        fill: #ffffff !important;
+      }
+      .logo svg text, .brand svg text,
+      .nav-logo svg text, .header-logo svg text {
+        fill: #ffffff !important;
+      }
 
-        /* MOBILE */
-        @media(max-width:768px){
-            .nav-links{display:none}
-            .mobile-toggle{display:block}
-            .hero-grid{grid-template-columns:1fr;text-align:center}
-            .hero h1{font-size:36px}
-            .hero p{margin-left:auto;margin-right:auto}
-            .hero-visual{display:none}
-            .features-grid{grid-template-columns:1fr}
-            .steps-grid{grid-template-columns:1fr}
-            .step-connector{display:none}
-            .plans-grid{grid-template-columns:1fr}
-            .stats-grid{grid-template-columns:repeat(2,1fr)}
-            .footer-grid{grid-template-columns:1fr;text-align:center}
-            .footer-brand p{margin:0 auto}
-            .section{padding:60px 0}
-            .section-title h2{font-size:28px}
+      /* Container do header */
+      .header-left, .nav-left, [class*="header-left"], [class*="nav-left"],
+      .header-start, .nav-start, [class*="header-start"], [class*="nav-start"] {
+        overflow: visible !important;
+        min-width: max-content !important;
+        flex-shrink: 0 !important;
+      }
+
+      /* Mobile */
+      @media (max-width: 768px) {
+        .logo, .brand, .nav-logo, .header-logo,
+        .site-logo, .brand-name,
+        [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
+        [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
+          font-size: 13px !important;
+          transform: scale(0.92);
+          transform-origin: left center;
+          color: #ffffff !important;
         }
+      }
+
+      /* React root */
+      #root .logo, #root .brand, #root .nav-logo, #root .header-logo,
+      #root [class*="logo"], #root [class*="brand"] {
+        overflow: visible !important;
+        white-space: nowrap !important;
+        min-width: max-content !important;
+        color: #ffffff !important;
+      }
     </style>
+    <!-- ==================================== -->
+
+    <style>
+      * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    </style>
+    <script type="module" crossorigin src="./assets/index-DW7JCCa_.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
+  <base target="_blank">
+<base target="_blank">
+<base target="_blank">
 </head>
-<body>
-    <!-- NAV -->
-    <nav class="nav" id="nav">
-        <div class="container nav-inner">
-            <a href="./" class="logo">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="8" y="15" width="60" height="70" rx="12" stroke="white" stroke-width="6" fill="none"/>
-                    <path d="M35 40 L55 52 L35 64 Z" fill="white"/>
-                    <path d="M20 75 L35 60" stroke="white" stroke-width="6" stroke-linecap="round"/>
-                    <circle cx="72" cy="25" r="22" fill="white"/>
-                    <text x="72" y="32" text-anchor="middle" fill="#0a1628" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
-                </svg>
-                <span class="logo-text">Venda<span>Live</span></span>
-            </a>
-            <div class="nav-links">
-                <a href="#funcionalidades">Funcionalidades</a>
-                <a href="#planos">Planos</a>
-                <a href="#faq">FAQ</a>
-                <a href="login.html" class="btn-primary">Entrar</a>
-            </div>
-            <button class="mobile-toggle" onclick="toggleMenu()">&#9776;</button>
-        </div>
-    </nav>
+  <body>
+    <div id="root"></div>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-bg"></div>
-        <div class="container">
-            <div class="hero-grid">
-                <div>
-                    <div class="hero-badge">
-                        <span class="dot"></span>
-                        <span>Ao Vivo</span>
-                    </div>
-                    <h1>O controle completo <span>da sua live</span> em um so lugar.</h1>
-                    <p>Gerencie pedidos, clientes, cobrancas e entregas em tempo real e aumente seus resultados nas lives de vendas.</p>
-                    <div class="hero-buttons">
-                        <a href="login.html" class="btn-primary btn-large">Acessar o Sistema &rarr;</a>
-                        <a href="#funcionalidades" class="btn-secondary btn-large">Ver Funcionalidades</a>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="hero-stat">
-                            <div class="num">2.500+</div>
-                            <div class="label">Lives gerenciadas</div>
-                        </div>
-                        <div class="hero-stat">
-                            <div class="num">50K+</div>
-                            <div class="label">Pedidos processados</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="hero-visual">
-                    <svg class="mockup" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="600" height="400" rx="16" fill="#0f1d32" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-                        <rect x="0" y="0" width="600" height="48" rx="16" fill="#0a1628"/>
-                        <circle cx="32" cy="24" r="6" fill="#ef4444" opacity="0.8"/>
-                        <circle cx="52" cy="24" r="6" fill="#f59e0b" opacity="0.8"/>
-                        <circle cx="72" cy="24" r="6" fill="#22c55e" opacity="0.8"/>
-                        <rect x="200" y="14" width="200" height="20" rx="4" fill="rgba(255,255,255,0.05)"/>
-                        <rect x="30" y="72" width="120" height="310" rx="8" fill="#0a1628"/>
-                        <rect x="40" y="88" width="100" height="8" rx="4" fill="rgba(255,255,255,0.1)"/>
-                        <rect x="40" y="108" width="80" height="6" rx="3" fill="#0B193F"/>
-                        <rect x="40" y="124" width="80" height="6" rx="3" fill="rgba(255,255,255,0.05)"/>
-                        <rect x="40" y="140" width="80" height="6" rx="3" fill="rgba(255,255,255,0.05)"/>
-                        <rect x="40" y="156" width="80" height="6" rx="3" fill="rgba(255,255,255,0.05)"/>
-                        <rect x="40" y="172" width="80" height="6" rx="3" fill="rgba(255,255,255,0.05)"/>
-                        <rect x="170" y="72" width="400" height="310" rx="8" fill="#0a1628"/>
-                        <rect x="190" y="88" width="360" height="40" rx="6" fill="rgba(255,255,255,0.03)"/>
-                        <rect x="200" y="98" width="80" height="6" rx="3" fill="rgba(255,255,255,0.2)"/>
-                        <rect x="300" y="98" width="60" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
-                        <rect x="420" y="98" width="80" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
-                        <rect x="190" y="144" width="360" height="32" rx="6" fill="rgba(255,255,255,0.02)"/>
-                        <rect x="200" y="154" width="100" height="6" rx="3" fill="rgba(255,255,255,0.15)"/>
-                        <rect x="320" y="154" width="80" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
-                        <rect x="450" y="154" width="60" height="6" rx="3" fill="#22c55e" opacity="0.6"/>
-                        <rect x="190" y="186" width="360" height="32" rx="6" fill="rgba(255,255,255,0.02)"/>
-                        <rect x="200" y="196" width="100" height="6" rx="3" fill="rgba(255,255,255,0.15)"/>
-                        <rect x="320" y="196" width="80" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
-                        <rect x="450" y="196" width="60" height="6" rx="3" fill="#f59e0b" opacity="0.6"/>
-                        <rect x="190" y="228" width="360" height="32" rx="6" fill="rgba(255,255,255,0.02)"/>
-                        <rect x="200" y="238" width="100" height="6" rx="3" fill="rgba(255,255,255,0.15)"/>
-                        <rect x="320" y="238" width="80" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
-                        <rect x="450" y="238" width="60" height="6" rx="3" fill="#22c55e" opacity="0.6"/>
-                        <rect x="190" y="280" width="170" height="80" rx="8" fill="rgba(91,155,213,0.1)"/>
-                        <rect x="200" y="296" width="60" height="6" rx="3" fill="#5b9bd5"/>
-                        <rect x="200" y="312" width="100" height="24" rx="4" fill="rgba(255,255,255,0.1)"/>
-                        <rect x="380" y="280" width="170" height="80" rx="8" fill="rgba(91,155,213,0.1)"/>
-                        <rect x="390" y="296" width="80" height="6" rx="3" fill="#5b9bd5"/>
-                        <rect x="390" y="312" width="100" height="24" rx="4" fill="rgba(255,255,255,0.1)"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FEATURES -->
-    <section class="section" id="funcionalidades">
-        <div class="container">
-            <div class="section-title">
-                <span class="tag">Funcionalidades</span>
-                <h2>Tudo que voce precisa para vender mais nas lives</h2>
-                <p>Nosso sistema foi criado especialmente para quem trabalha com lives de vendas.</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">&#9889;</div>
-                    <h3>Registro Rapido de Vendas</h3>
-                    <p>Cadastre os pedidos em poucos segundos: nome do cliente, pecas compradas, quantidade, valores e observacoes. Tudo pensado para acompanhar o ritmo acelerado das lives.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#128202;</div>
-                    <h3>Organizacao Automatica</h3>
-                    <p>O sistema separa automaticamente: clientes, produtos vendidos, valores totais, pedidos pendentes e status de pagamento.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#128176;</div>
-                    <h3>Cobrancas Ageis</h3>
-                    <p>Assim que a live termina, o sistema ja deixa tudo preparado para cobranca. Gere mensagens automaticas, envie PIX e acelere pagamentos.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#9200;</div>
-                    <h3>Economize Horas de Trabalho</h3>
-                    <p>Chega de anotar pedidos no papel, procurar clientes no direct ou calcular valores manualmente. O sistema automatiza tudo.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#128231;</div>
-                    <h3>Comunicacao com Clientes</h3>
-                    <p>Envie mensagens personalizadas pelo WhatsApp com resumo dos pedidos, valores e link de pagamento PIX automaticamente.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#128230;</div>
-                    <h3>Controle de Entregas</h3>
-                    <p>Gerencie o endereco dos clientes, envie para transportadora e faca o rastreamento de todas as entregas em um so lugar.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- STEPS -->
-    <section class="section steps">
-        <div class="container">
-            <div class="section-title">
-                <span class="tag">Como Funciona</span>
-                <h2>3 passos para organizar suas vendas</h2>
-            </div>
-            <div class="steps-grid">
-                <div class="step-connector"></div>
-                <div class="step">
-                    <div class="step-num">1</div>
-                    <h3>Registre os Pedidos</h3>
-                    <p>Durante a live, registre rapidamente cada pedido com nome do cliente, itens e valores.</p>
-                </div>
-                <div class="step">
-                    <div class="step-num">2</div>
-                    <h3>Cobranca Automatica</h3>
-                    <p>ao finalizar, gere cobrancas via PIX e envie para os clientes pelo WhatsApp.</p>
-                </div>
-                <div class="step">
-                    <div class="step-num">3</div>
-                    <h3>Organize os Envios</h3>
-                    <p>Com tudo confirmado e pago, organize os envios com enderecos e rastreamento.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- STATS BAR -->
-    <section class="stats-bar">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="num">2.500+</div>
-                    <div class="label">Lives Gerenciadas</div>
-                </div>
-                <div class="stat-item">
-                    <div class="num">50K+</div>
-                    <div class="label">Pedidos Processados</div>
-                </div>
-                <div class="stat-item">
-                    <div class="num">R$ 12M+</div>
-                    <div class="label">em Vendas</div>
-                </div>
-                <div class="stat-item">
-                    <div class="num">850+</div>
-                    <div class="label">Lojistas Ativos</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PLANS -->
-    <section class="section" id="planos">
-        <div class="container">
-            <div class="section-title">
-                <span class="tag">Planos e Precos</span>
-                <h2>Escolha o plano ideal para voce</h2>
-            </div>
-            <div class="plans-grid">
-                <div class="plan-card">
-                    <div class="plan-name">Plano Basic</div>
-                    <div class="plan-price">
-                        <span class="currency">R$</span>
-                        <span class="amount">50</span>
-                        <span class="period">/mes</span>
-                    </div>
-                    <ul class="plan-features">
-                        <li><span class="check">&#10003;</span>Ate 3 usuarios</li>
-                        <li><span class="check">&#10003;</span>Registro de vendas</li>
-                        <li><span class="check">&#10003;</span>Cobranca PIX</li>
-                        <li><span class="check">&#10003;</span>Controle de clientes</li>
-                        <li><span class="check">&#10003;</span>Relatorios basicos</li>
-                        <li><span class="check">&#10003;</span>Suporte por email</li>
-                    </ul>
-                    <a href="https://wa.me/" class="btn-primary" style="width:100%;justify-content:center">Escolher Plano Basic</a>
-                </div>
-                <div class="plan-card popular">
-                    <div class="plan-badge">Mais Popular</div>
-                    <div class="plan-name">Plano Premium</div>
-                    <div class="plan-price">
-                        <span class="currency">R$</span>
-                        <span class="amount">100</span>
-                        <span class="period">/mes</span>
-                    </div>
-                    <ul class="plan-features">
-                        <li><span class="check">&#10003;</span>Usuarios ilimitados</li>
-                        <li><span class="check">&#10003;</span>Tudo do Basic</li>
-                        <li><span class="check">&#10003;</span>Multiplas lives simultaneas</li>
-                        <li><span class="check">&#10003;</span>Automacao WhatsApp</li>
-                        <li><span class="check">&#10003;</span>Controle de entregas</li>
-                        <li><span class="check">&#10003;</span>Suporte prioritario</li>
-                        <li><span class="check">&#10003;</span>API de integracao</li>
-                    </ul>
-                    <a href="https://wa.me/" class="btn-primary" style="width:100%;justify-content:center">Escolher Plano Premium</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ -->
-    <section class="section faq" id="faq">
-        <div class="container">
-            <div class="section-title">
-                <span class="tag">Perguntas Frequentes</span>
-                <h2>Tire suas duvidas</h2>
-            </div>
-            <div class="faq-list">
-                <div class="faq-item active">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Preciso instalar algo no meu computador?</span>
-                        <span class="icon">&#9662;</span>
-                    </div>
-                    <div class="faq-answer"><p>Nao! O VendaLive funciona 100% na nuvem. Basta acessar pelo navegador do seu computador, tablet ou celular.</p></div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Posso usar em qualquer rede social?</span>
-                        <span class="icon">&#9662;</span>
-                    </div>
-                    <div class="faq-answer"><p>Sim! O VendaLive funciona independente da plataforma. Voce pode usar no Instagram, Facebook, TikTok, YouTube ou qualquer outra rede social.</p></div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Como funciona a cobranca automatica?</span>
-                        <span class="icon">&#9662;</span>
-                    </div>
-                    <div class="faq-answer"><p>Ao finalizar sua live, o sistema gera automaticamente as cobrancas PIX e envia as mensagens pelo WhatsApp para cada cliente com o resumo do pedido e o link de pagamento.</p></div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Posso cancelar a qualquer momento?</span>
-                        <span class="icon">&#9662;</span>
-                    </div>
-                    <div class="faq-answer"><p>Sim! Voce pode cancelar sua assinatura a qualquer momento, sem multas ou taxas de cancelamento.</p></div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Tem suporte para mais de uma live por dia?</span>
-                        <span class="icon">&#9662;</span>
-                    </div>
-                    <div class="faq-answer"><p>Sim! No plano Premium voce pode gerenciar multiplas lives simultaneamente, cada uma com seu proprio controle de vendas e cobrancas.</p></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta">
-        <div class="container">
-            <h2>Pronto para organizar suas lives?</h2>
-            <p>Comece agora mesmo e veja a diferenca no seu dia a dia.</p>
-            <a href="login.html" class="btn-primary btn-large">Acessar o Sistema &rarr;</a>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="logo" style="margin-bottom:12px">
-                        <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
-                            <rect x="8" y="15" width="60" height="70" rx="12" stroke="#0B193F" stroke-width="6" fill="none"/>
-                            <path d="M35 40 L55 52 L35 64 Z" fill="#0B193F"/>
-                            <path d="M20 75 L35 60" stroke="#0B193F" stroke-width="6" stroke-linecap="round"/>
-                            <circle cx="72" cy="25" r="22" fill="#0B193F"/>
-                            <text x="72" y="32" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
-                        </svg>
-                        <span class="logo-text">Venda<span>Live</span></span>
-                    </div>
-                    <p>Sistema completo de gestao para lives de vendas. Organize pedidos, clientes, cobrancas e entregas em um so lugar.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Produto</h4>
-                    <a href="#funcionalidades">Funcionalidades</a>
-                    <a href="#planos">Planos</a>
-                    <a href="login.html">Login</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Suporte</h4>
-                    <a href="#faq">FAQ</a>
-                    <a href="#">WhatsApp</a>
-                    <a href="#">Email</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Legal</h4>
-                    <a href="#">Termos de Uso</a>
-                    <a href="#">Privacidade</a>
-                </div>
-            </div>
-            <div class="footer-bottom">&copy; 2026 VendaLive. Todos os direitos reservados.</div>
-        </div>
-    </footer>
-
+    <!-- Script de correção dinâmica após React renderizar -->
     <script>
-        // Nav scroll effect
-        window.addEventListener('scroll', function() {
-            document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
+      (function() {
+        function fixLogo() {
+          // Procura por todos os possíveis logos
+          var selectors = [
+            '.logo', '.brand', '.nav-logo', '.header-logo', '.site-logo', '.brand-name',
+            '[class*="logo"]', '[class*="brand"]'
+          ];
+
+          selectors.forEach(function(sel) {
+            var elements = document.querySelectorAll(sel);
+            elements.forEach(function(el) {
+              // Força estilos inline (mais específico que CSS)
+              el.style.overflow = 'visible';
+              el.style.whiteSpace = 'nowrap';
+              el.style.minWidth = 'max-content';
+              el.style.maxWidth = 'none';
+              el.style.width = 'auto';
+              el.style.flexShrink = '0';
+              el.style.textOverflow = 'clip';
+
+              // Procura spans dentro do logo
+              var spans = el.querySelectorAll('span');
+              spans.forEach(function(span, index) {
+                span.style.display = 'inline';
+                span.style.whiteSpace = 'nowrap';
+                span.style.overflow = 'visible';
+
+                // Todos os spans brancos
+                span.style.color = '#ffffff';
+                span.style.fontWeight = '700';
+              });
+
+              // Forçar SVG do ícone branco
+              var svgElements = el.querySelectorAll('svg *');
+              svgElements.forEach(function(el) {
+                el.style.stroke = '#ffffff';
+                el.style.fill = '#ffffff';
+              });
+              // Se o logo tiver SVG com texto
+              var texts = el.querySelectorAll('text');
+              texts.forEach(function(text, index) {
+                text.style.fill = '#ffffff';
+              });
+            });
+          });
+        }
+
+        // Executa após carregamento
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', fixLogo);
+        } else {
+          fixLogo();
+        }
+
+        // Reexecuta após 1s e 3s (React pode renderizar depois)
+        setTimeout(fixLogo, 1000);
+        setTimeout(fixLogo, 3000);
+
+        // Observa mudanças no DOM (React re-renderiza)
+        var observer = new MutationObserver(function(mutations) {
+          fixLogo();
         });
 
-        // FAQ toggle
-        function toggleFaq(el) {
-            var item = el.parentElement;
-            var wasActive = item.classList.contains('active');
-            document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('active'); });
-            if (!wasActive) item.classList.add('active');
-        }
-
-        // Mobile menu toggle
-        function toggleMenu() {
-            var links = document.querySelector('.nav-links');
-            links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
-            links.style.position = 'absolute';
-            links.style.top = '72px';
-            links.style.left = '0';
-            links.style.right = '0';
-            links.style.background = 'rgba(10,22,40,.98)';
-            links.style.flexDirection = 'column';
-            links.style.padding = '20px';
-            links.style.gap = '16px';
-        }
-
-        // Session check - redirect if logged in
-        (function(){
-            try {
-                var s = localStorage.getItem('usuarioLogado');
-                if (s) {
-                    var d = JSON.parse(s);
-                    if (d && d.auth_id && d.login_time) {
-                        var t = new Date(d.login_time).getTime();
-                        if ((Date.now() - t) < 24*60*60*1000) {
-                            // User is logged in, show dashboard link instead
-                            var ctaBtn = document.querySelector('.hero-buttons .btn-primary');
-                            if (ctaBtn) ctaBtn.textContent = 'Ir para Dashboard \u2192';
-                        }
-                    }
-                }
-            } catch(e){}
-        })();
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+      })();
     </script>
-</body>
+  </body>
 </html>

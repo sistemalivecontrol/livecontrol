@@ -996,6 +996,9 @@
     async function logout() {
       try { await supabaseClient.auth.signOut(); } catch (err) {}
       localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('usuarioLogado');
+      localStorage.removeItem('clienteId');
+      localStorage.removeItem('nivelAcesso');
       sessionStorage.clear();
       window.location.href = 'login.html';
     }
