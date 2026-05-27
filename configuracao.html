@@ -28,12 +28,16 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a;line-height:1.6}
-        .container{max-width:900px;margin:0 auto;padding:24px}
+        .container{max-width:1400px;margin:0 auto;padding:24px}
 
         /* Header */
         .header{background:#0a1628;padding:20px 24px;border-radius:16px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.15)}
-        .header h1{color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px}
-        .header h1 span{color:#5b9bd5}
+        .header-left{display:flex;align-items:center;gap:16px;flex:1}
+        .header-center h1{color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px;margin:0}
+        .header-center h1 span{color:#5b9bd5}
+        .user-info{display:flex;align-items:center;gap:10px;color:#fff;font-size:14px;font-weight:500}
+        .btn-voltar{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+        .btn-voltar:hover{background:rgba(255,255,255,.2)}
         .btn-voltar{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
         .btn-voltar:hover{background:rgba(255,255,255,.2)}
 
@@ -92,24 +96,30 @@
         .toggle-pw{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:500}
         .toggle-pw:hover{color:#0a1628;background:#f1f5f9}
 
+        /* Menu hamburger visivel no header escuro */
+        .nav-menu-btn{color:#fff!important}
+        .nav-menu-btn:hover{background:rgba(255,255,255,.15)!important}
+
         @media(max-width:640px){
             .form-row{grid-template-columns:1fr}
             .container{padding:16px}
             .card{padding:20px}
+            .header-left{flex-direction:column;gap:10px}
+            .header-center h1{font-size:18px}
         }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- HEADER -->
-        <div class="header" style="position:relative;">
-            <div class="header-left" style="display:flex;align-items:center;gap:12px;">
-                <h1>&#9881; <span>Configuracoes</span> do Sistema</h1>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div class="user-info" id="userInfo" style="color:#fff;font-size:14px;">&#128100; <span id="userEmail">Carregando...</span></div>
+        <div class="header">
+            <div class="header-left">
                 <button class="btn-voltar" onclick="location.href='dashboard.html'">&#8592; Voltar</button>
+                <div class="header-center">
+                    <h1>&#9881; <span>Configuracoes</span> do Sistema</h1>
+                </div>
             </div>
+            <div class="user-info" id="userInfo">&#128100; <span id="userEmail">Carregando...</span></div>
         </div>
 
         <!-- ABAS -->
