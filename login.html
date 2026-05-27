@@ -6,13 +6,12 @@
     (function() {
         try {
             // Se veio de logout, limpar tudo e ficar na pagina de login
-            if (location.search.indexOf('logout=1') !== -1) {
+            if (location.search.indexOf('logout=1') !== -1 || sessionStorage.getItem('justLoggedOut') === '1') {
                 localStorage.removeItem('usuarioLogado');
                 localStorage.removeItem('clienteId');
                 localStorage.removeItem('nivelAcesso');
+                sessionStorage.removeItem('justLoggedOut');
                 sessionStorage.clear();
-                // Limpar URL sem recarregar
-                history.replaceState(null, '', 'login.html');
                 return; // NAO redirecionar
             }
             var sessao = localStorage.getItem('usuarioLogado');
@@ -493,7 +492,10 @@
         async function verificarSessaoExistente() {
             try {
                 // Se veio de logout, nao redirecionar
-                if (location.search.indexOf('logout=1') !== -1) return;
+                if (location.search.indexOf('logout=1') !== -1 || sessionStorage.getItem('justLoggedOut') === '1') {
+                    sessionStorage.removeItem('justLoggedOut');
+                    return;
+                }
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
                 if (error) return;
                 if (session) {

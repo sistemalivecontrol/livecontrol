@@ -98,7 +98,8 @@
     function redirecionarParaLogin() {
         // Evitar loop de redirecionamento
         if (window.location.href.includes(LOGIN_PAGE)) return;
-        window.location.href = LOGIN_PAGE + '?logout=1';
+        sessionStorage.setItem('justLoggedOut', '1');
+            window.location.href = LOGIN_PAGE + '?logout=1';
     }
 
     function limparSessao() {
@@ -245,6 +246,7 @@
             window.sessaoUsuario = null;
             window.authClienteId = null;
             window.authUsuario = null;
+            sessionStorage.setItem('justLoggedOut', '1');
             window.location.href = LOGIN_PAGE + '?logout=1';
         },
 
@@ -999,7 +1001,7 @@
       localStorage.removeItem('usuarioLogado');
       localStorage.removeItem('clienteId');
       localStorage.removeItem('nivelAcesso');
-      sessionStorage.clear();
+      sessionStorage.setItem('justLoggedOut', '1');
       window.location.href = 'login.html?logout=1';
     }
 
