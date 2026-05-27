@@ -905,6 +905,8 @@
         // ============================================
         // VARIÁVEIS GLOBAIS (auth.js fornece supabaseClient, authClienteId)
         // ============================================
+        // Helper para URLs - compatibilidade com caminhos relativos
+        function v(url) { return url; }
         let supabaseClient = null;
         let usuarioAtual = null;
         let clienteAtual = null;
