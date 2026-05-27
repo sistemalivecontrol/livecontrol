@@ -1362,7 +1362,7 @@
     function forcarCentralizacao() {
         var divs = document.querySelectorAll('.botoes-centro');
         divs.forEach(function(div) {
-            div.style.cssText = 'text-align: center !important; margin: 20px 0 !important; display: block !important; width: 100% !important;';
+            div.style.cssText = 'display: flex !important; justify-content: center !important; flex-wrap: wrap !important; gap: 10px !important; margin: 20px 0 !important; width: 100% !important;';
             // Forçar cada botão também
             var botoes = div.querySelectorAll('button');
             botoes.forEach(function(btn) {
