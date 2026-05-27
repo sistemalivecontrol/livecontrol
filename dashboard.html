@@ -995,12 +995,12 @@
 
     async function logout() {
       try { await supabaseClient.auth.signOut(); } catch (err) {}
-      localStorage.removeItem('supabase.auth.token');
       localStorage.removeItem('usuarioLogado');
       localStorage.removeItem('clienteId');
       localStorage.removeItem('nivelAcesso');
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('logoutTimestamp');
       sessionStorage.clear();
-      localStorage.setItem('logoutTimestamp', Date.now());
       window.location.replace('login.html');
     }
 

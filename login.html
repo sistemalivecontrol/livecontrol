@@ -494,23 +494,6 @@
         }
 
         document.getElementById('loginForm').addEventListener('submit', fazerLogin);
-
-        async function verificarSessaoExistente() {
-            try {
-                // Se veio de logout (timestamp dos ultimos 30s), nao redirecionar
-                var logoutTs = localStorage.getItem('logoutTimestamp');
-                if (logoutTs && (Date.now() - parseInt(logoutTs)) < 30000) return;
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
-                if (error) return;
-                if (session) {
-                    const usuarioLogado = localStorage.getItem('usuarioLogado');
-                    if (usuarioLogado) {
-                        window.location.href = 'dashboard.html';
-                    }
-                }
-            } catch (error) {}
-        }
-        verificarSessaoExistente();
     </script>
 </body>
 </html>
