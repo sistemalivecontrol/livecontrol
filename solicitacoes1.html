@@ -7,6 +7,7 @@
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="js/config-system.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); min-height: 100vh; padding: 20px; }
@@ -459,9 +460,9 @@
         // ============================================
         // EVOLUTION API - ENVIO DE WHATSAPP
         // ============================================
-        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
-        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
-        const EVOLUTION_INSTANCE = 'pingodegente';
+        var EVOLUTION_API_URL = (window.VendaLiveConfig && window.VendaLiveConfig.get('evolution_api_url')) || 'https://evolution-api-o12a.onrender.com';
+        var EVOLUTION_API_KEY = (window.VendaLiveConfig && window.VendaLiveConfig.get('evolution_api_key')) || '';
+        var EVOLUTION_INSTANCE = (window.VendaLiveConfig && window.VendaLiveConfig.get('evolution_instance')) || 'pingodegente';
 
         // Função para enviar mensagem WhatsApp
         async function enviarWhatsApp(numero, texto, opcoes) {
