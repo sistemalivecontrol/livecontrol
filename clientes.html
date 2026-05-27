@@ -99,7 +99,8 @@
         // Evitar loop de redirecionamento
         if (window.location.href.includes(LOGIN_PAGE)) return;
         localStorage.setItem('logoutTimestamp', Date.now());
-            window.location.href = LOGIN_PAGE + '?logout=1';
+            localStorage.setItem('logoutTimestamp', Date.now());
+            window.location.replace(LOGIN_PAGE);
     }
 
     function limparSessao() {
@@ -247,7 +248,8 @@
             window.authClienteId = null;
             window.authUsuario = null;
             localStorage.setItem('logoutTimestamp', Date.now());
-            window.location.href = LOGIN_PAGE + '?logout=1';
+            localStorage.setItem('logoutTimestamp', Date.now());
+            window.location.replace(LOGIN_PAGE);
         },
 
         // Atualizar dados da sessao
