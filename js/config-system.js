@@ -133,4 +133,3 @@
 
     console.log('[CONFIG] Config-system.js carregado. Instancia:', window.EVOLUTION_INSTANCE);
 })();
-})();
