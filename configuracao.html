@@ -371,27 +371,52 @@
             showStatus('statusWhatsapp', 'Testando conexao...', 'info');
 
             try {
-                var resp = await fetch(url + '/instance/fetchInstances', {
+                // Teste 1: Verificar estado da instancia
+                var resp = await fetch(url + '/instance/connectionState/' + instance, {
                     headers: key ? { 'apikey': key } : {}
                 });
                 if (resp.ok) {
                     var data = await resp.json();
+                    var state = (data.instance && data.instance.state) || data.state || 'desconhecido';
+                    if (state === 'open' || state === 'connected') {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" conectada! WhatsApp Online!', 'ok');
+                    } else if (state === 'connecting' || state === 'qrcode') {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" existe mas nao conectada. Status: ' + state + '. Leia o QR Code no painel da Evolution.', 'warn');
+                    } else {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" encontrada. Status: ' + state, 'warn');
+                    }
+                    return;
+                }
+
+                // Teste 2: Se connectionState falhou, tentar fetchInstances
+                showStatus('statusWhatsapp', 'Verificando instancias disponiveis...', 'info');
+                var resp2 = await fetch(url + '/instance/fetchInstances', {
+                    headers: key ? { 'apikey': key } : {}
+                });
+                if (resp2.ok) {
+                    var data2 = await resp2.json();
                     var encontrou = false;
-                    if (Array.isArray(data)) {
-                        for (var i = 0; i < data.length; i++) {
-                            if (data[i].instance && data[i].instance.name === instance) {
-                                encontrou = true;
-                                var status = data[i].instance.status || 'desconhecido';
-                                showStatus('statusWhatsapp', 'Instancia "' + instance + '" encontrada! Status: ' + status, 'ok');
-                                break;
-                            }
+                    var nomes = [];
+                    if (Array.isArray(data2)) {
+                        for (var i = 0; i < data2.length; i++) {
+                            var nome = (data2[i].instance && data2[i].instance.name) || data2[i].name || '?';
+                            nomes.push(nome);
+                            if (nome === instance) encontrou = true;
+                        }
+                    } else if (data2.instances && Array.isArray(data2.instances)) {
+                        for (var j = 0; j < data2.instances.length; j++) {
+                            var nome2 = data2.instances[j].name || '?';
+                            nomes.push(nome2);
+                            if (nome2 === instance) encontrou = true;
                         }
                     }
-                    if (!encontrou) {
-                        showStatus('statusWhatsapp', 'API OK, mas instancia "' + instance + '" nao encontrada. Verifique o nome.', 'warn');
+                    if (encontrou) {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" existe na API, mas pode estar desconectada.', 'warn');
+                    } else {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" NAO encontrada. Instancias disponiveis: ' + nomes.join(', ') || '(nenhuma)', 'error');
                     }
                 } else {
-                    showStatus('statusWhatsapp', 'Erro na conexao: HTTP ' + resp.status, 'error');
+                    showStatus('statusWhatsapp', 'API retornou erro: HTTP ' + resp.status + '. Verifique URL e API Key.', 'error');
                 }
             } catch(e) {
                 showStatus('statusWhatsapp', 'Falha na conexao: ' + e.message, 'error');

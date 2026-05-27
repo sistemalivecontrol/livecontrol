@@ -128,12 +128,9 @@
         defaults: DEFAULTS
     };
 
-    // Aplicar automaticamente ao carregar
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', applyGlobals);
-    } else {
-        applyGlobals();
-    }
+    // Aplicar imediatamente (nao esperar DOMContentLoaded)
+    applyGlobals();
 
-    console.log('[CONFIG] Config-system.js carregado');
+    console.log('[CONFIG] Config-system.js carregado. Instancia:', window.EVOLUTION_INSTANCE);
+})();
 })();
