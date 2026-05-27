@@ -120,17 +120,19 @@
     }
 
     async function inicializarSupabase() {
-        if (supabaseInicializado && window.supabaseClient) return true;
+        // Se ja existe supabaseClient (de auth.js ou outro script), usar ele
+        if (window.supabaseClient) {
+            if (!supabaseInicializado) {
+                supabaseInicializado = true;
+                console.log('[SESSION] Usando supabaseClient existente');
+            }
+            return true;
+        }
+        if (supabaseInicializado) return true;
         if (supabaseInitPromise) return supabaseInitPromise;
 
         supabaseInitPromise = (async () => {
             try {
-                // Verificar se ja existe um client Supabase
-                if (window.supabaseClient) {
-                    supabaseInicializado = true;
-                    return true;
-                }
-
                 // Tentar detectar a biblioteca Supabase
                 let supabaseLib = detectarSupabase();
 
@@ -153,17 +155,6 @@
                         detectSessionInUrl: false
                     }
                 });
-
-                // Sincronizar com a sessao do Supabase Auth
-                try {
-                    const { data: { session } } = await window.supabaseClient.auth.getSession();
-                    if (!session) {
-                        // Supabase nao tem sessao, mas localStorage tem - tentar restaurar
-                        console.log('[SESSION] Supabase sem sessao, mas localStorage tem');
-                    }
-                } catch (e) {
-                    // Ignorar erro
-                }
 
                 supabaseInicializado = true;
                 console.log('[SESSION] Supabase inicializado');
